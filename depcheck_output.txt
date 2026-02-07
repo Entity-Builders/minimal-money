@@ -1,0 +1,12 @@
+Unused dependencies
+* @react-navigation/stack
+* expo-application
+* expo-asset
+* expo-dev-client
+* expo-device
+* react-native-screens
+* react-native-svg
+Unused devDependencies
+* @types/jest
+Missing dependencies
+* @expo/vector-icons: ./src/screens/HistoryScreen.tsx

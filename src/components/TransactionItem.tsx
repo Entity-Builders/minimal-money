@@ -1,0 +1,77 @@
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Transaction } from '../types';
+
+interface TransactionItemProps {
+  transaction: Transaction;
+}
+
+export const TransactionItem: React.FC<TransactionItemProps> = ({
+  transaction,
+}) => {
+  const isNegative = transaction.amount < 0;
+  // Format relative time (e.g., "hace 10 min")
+  const timeAgo = formatDistanceToNow(new Date(transaction.timestamp), {
+    addSuffix: true,
+    locale: es,
+  });
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.contentContainer}>
+        <Text style={styles.nameText} numberOfLines={1}>
+          {transaction.name || 'General'}
+        </Text>
+        <Text style={styles.timeText}>hace {timeAgo}</Text>
+      </View>
+      <View style={styles.rightColumn}>
+        <Text
+          style={[
+            styles.amountText,
+            { color: isNegative ? '#FF453A' : '#30D158' },
+          ]}
+        >
+          {isNegative ? '- ' : '+ '}$ {Math.abs(transaction.amount).toFixed(2)}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)', // Divider color
+    marginHorizontal: 16, // Add some margin to align with header
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  rightColumn: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    minWidth: 80, // Ensure amount aligns vertically even if small
+  },
+  nameText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  timeText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  amountText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
