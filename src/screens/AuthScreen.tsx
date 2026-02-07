@@ -29,22 +29,6 @@ export default function AuthScreen() {
     });
 
     try {
-      // Diagnostic: Check connectivity to Supabase URL root
-      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-      if (supabaseUrl) {
-        try {
-          const response = await fetch(supabaseUrl, { method: 'HEAD' });
-        } catch (netError: any) {
-          Sentry.captureException(netError, {
-            tags: { context: 'connectivity_test' },
-          });
-          Alert.alert(
-            'Connectivity Warning',
-            `Could not reach Supabase URL: ${supabaseUrl}\nError: ${netError.message}`,
-          );
-        }
-      }
-
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email,
