@@ -19,9 +19,9 @@
     "seed": "node scripts/seed_expenses.js"
   },
   "dependencies": {
-    "@gorhom/bottom-sheet": "^5.2.8",
     "@eb-packages/logic": "*",
     "@eb-packages/ui": "*",
+    "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/slider": "^5.1.1",
     "@react-navigation/native": "^7.1.24",
