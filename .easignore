@@ -1,0 +1,43 @@
+# ─── Node modules ──────────────────────────────────────────────
+node_modules/
+
+# ─── Other apps in the monorepo (the biggest culprits) ─────────
+../../apps/PostalPeek/
+../../apps/potlink-mobile/
+../../apps/promptly/
+../../apps/tablia/
+../../apps/tellee/
+../../apps/zigzag/
+
+# ─── Infra & Docker ────────────────────────────────────────────
+../../eb-infra/
+
+# ─── Dev/test artifacts ─────────────────────────────────────────
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+__mocks__/
+coverage/
+.jest-cache/
+
+# ─── Build outputs ──────────────────────────────────────────────
+android/
+ios/build/
+dist/
+.expo/
+
+# ─── Large media/assets not needed at build time ────────────────
+**/*.mp4
+**/*.mov
+**/*.avi
+
+# ─── Docs, scripts, ideas ───────────────────────────────────────
+../../.agent/
+../../docs/
+../../test-*.js
+
+# ─── Misc ───────────────────────────────────────────────────────
+.DS_Store
+*.log
