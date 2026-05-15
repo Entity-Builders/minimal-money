@@ -16,7 +16,8 @@ import { useSettingsScreen } from '../hooks/useSettingsScreen';
 import { styles } from './SettingsScreenStyles';
 import { SettingsHeader } from '../components/settings/SettingsHeader';
 import { Ionicons } from '@expo/vector-icons';
-import { JoinBatchSheet } from '../components/sharing/JoinBatchSheet';
+import { JoinBudgetSheet } from '../components/sharing/JoinBudgetSheet';
+import { CreateBudgetSheet } from '../components/sharing/CreateBudgetSheet';
 
 export default function SettingsScreen() {
   const {
@@ -36,6 +37,7 @@ export default function SettingsScreen() {
 
   const insets = useSafeAreaInsets();
   const [showJoin, setShowJoin] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -53,7 +55,7 @@ export default function SettingsScreen() {
           </Text>
 
           <Text style={{ fontSize: 18, color: '#FFFFFF', fontWeight: 'bold', marginBottom: 15, marginTop: 20 }}>
-            Your Batches
+            Tus Budgets
           </Text>
 
           {batches.map(batch => (
@@ -69,44 +71,7 @@ export default function SettingsScreen() {
             </View>
           ))}
 
-          <Text style={{ fontSize: 18, color: '#FFFFFF', fontWeight: 'bold', marginBottom: 15, marginTop: 30 }}>
-            Create New Batch
-          </Text>
-          <View style={{ backgroundColor: '#1E1E1E', padding: 15, borderRadius: 10 }}>
-            <TextInput
-              style={{ backgroundColor: '#2C2C2C', color: '#FFF', padding: 12, borderRadius: 8, marginBottom: 10 }}
-              placeholder="Icon (e.g. 🛒)"
-              placeholderTextColor="#888"
-              value={icon}
-              onChangeText={setIcon}
-            />
-            <TextInput
-              style={{ backgroundColor: '#2C2C2C', color: '#FFF', padding: 12, borderRadius: 8, marginBottom: 10 }}
-              placeholder="Batch Name (e.g. Supermarket)"
-              placeholderTextColor="#888"
-              value={name}
-              onChangeText={setName}
-            />
-            <TextInput
-              style={{ backgroundColor: '#2C2C2C', color: '#FFF', padding: 12, borderRadius: 8, marginBottom: 15 }}
-              placeholder="Monthly Limit (e.g. 500)"
-              placeholderTextColor="#888"
-              keyboardType="numeric"
-              value={limit}
-              onChangeText={setLimit}
-            />
-            <TouchableOpacity 
-              style={{ backgroundColor: '#00D1FF', padding: 15, borderRadius: 8, alignItems: 'center' }}
-              onPress={handleCreateBatch}
-              disabled={loading || !name || !limit}
-            >
-              {loading ? (
-                <ActivityIndicator color="#000" />
-              ) : (
-                <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>Create Batch</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+
 
           <TouchableOpacity style={[styles.logoutButton, { marginTop: 40 }]} onPress={handleLogout}>
             <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
@@ -114,27 +79,50 @@ export default function SettingsScreen() {
         </KeyboardAvoidingView>
       </ScrollView>
 
-      {/* ── Join Budget CTA ──────────────────────────────── */}
-      <TouchableOpacity
-        onPress={() => setShowJoin(true)}
-        style={{
-          margin: 20,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          backgroundColor: 'rgba(48,209,88,0.12)',
-          borderWidth: 1,
-          borderColor: 'rgba(48,209,88,0.3)',
-          borderRadius: 14,
-          padding: 14,
-        }}
-      >
-        <Ionicons name="enter-outline" size={18} color="#30D158" />
-        <Text style={{ color: '#30D158', fontWeight: '700', fontSize: 15 }}>
-          Unirme a un Budget
-        </Text>
-      </TouchableOpacity>
+      {/* ── Actions CTA ──────────────────────────────── */}
+      <View style={{ flexDirection: 'row', margin: 20, gap: 10 }}>
+        <TouchableOpacity
+          onPress={() => setShowCreate(true)}
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            backgroundColor: 'rgba(0,209,255,0.12)',
+            borderWidth: 1,
+            borderColor: 'rgba(0,209,255,0.3)',
+            borderRadius: 14,
+            padding: 14,
+          }}
+        >
+          <Ionicons name="add-circle-outline" size={18} color="#00D1FF" />
+          <Text style={{ color: '#00D1FF', fontWeight: '700', fontSize: 15 }}>
+            Crear
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setShowJoin(true)}
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            backgroundColor: 'rgba(48,209,88,0.12)',
+            borderWidth: 1,
+            borderColor: 'rgba(48,209,88,0.3)',
+            borderRadius: 14,
+            padding: 14,
+          }}
+        >
+          <Ionicons name="enter-outline" size={18} color="#30D158" />
+          <Text style={{ color: '#30D158', fontWeight: '700', fontSize: 15 }}>
+            Unirme
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* ── Join Modal ───────────────────────────────────── */}
       <Modal
@@ -157,9 +145,38 @@ export default function SettingsScreen() {
             onPress={(e) => e.stopPropagation()}
           >
             <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#444', alignSelf: 'center', marginTop: 12, marginBottom: 4 }} />
-            <JoinBatchSheet
+            <JoinBudgetSheet
               onJoined={() => setShowJoin(false)}
               onClose={() => setShowJoin(false)}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* ── Create Modal ───────────────────────────────────── */}
+      <Modal
+        visible={showCreate}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCreate(false)}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
+          onPress={() => setShowCreate(false)}
+        >
+          <Pressable
+            style={{
+              backgroundColor: '#1C1C1E',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingBottom: insets.bottom + 8,
+            }}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#444', alignSelf: 'center', marginTop: 12, marginBottom: 4 }} />
+            <CreateBudgetSheet
+              onCreated={() => setShowCreate(false)}
+              onClose={() => setShowCreate(false)}
             />
           </Pressable>
         </Pressable>

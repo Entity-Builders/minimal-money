@@ -10,12 +10,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { joinBatchWithCode, JoinResult } from '@eb-packages/logic';
 
-interface JoinBatchSheetProps {
+interface JoinBudgetSheetProps {
   onJoined: (result: JoinResult) => void;
   onClose: () => void;
 }
 
-export const JoinBatchSheet: React.FC<JoinBatchSheetProps> = ({ onJoined, onClose }) => {
+export const JoinBudgetSheet: React.FC<JoinBudgetSheetProps> = ({ onJoined, onClose }) => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

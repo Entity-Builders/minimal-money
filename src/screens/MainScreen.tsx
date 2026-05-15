@@ -22,8 +22,8 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { HistoryBottomSheet } from '../components/HistoryBottomSheet';
-import { ShareBatchSheet } from '../components/sharing/ShareBatchSheet';
-import { JoinBatchSheet } from '../components/sharing/JoinBatchSheet';
+import { ShareBudgetSheet } from '../components/sharing/ShareBudgetSheet';
+import { JoinBudgetSheet } from '../components/sharing/JoinBudgetSheet';
 
 import { useMainScreen } from '../hooks/useMainScreen';
 import { useOTAUpdate } from '../hooks/useOTAUpdate';
@@ -329,7 +329,7 @@ export default function MainScreen() {
           >
             <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#444', alignSelf: 'center', marginTop: 12, marginBottom: 4 }} />
             {shareTarget && (
-              <ShareBatchSheet
+              <ShareBudgetSheet
                 batchId={shareTarget.id}
                 batchName={shareTarget.name}
                 batchIcon={shareTarget.icon}
@@ -362,7 +362,7 @@ export default function MainScreen() {
             onPress={(e) => e.stopPropagation()}
           >
             <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#444', alignSelf: 'center', marginTop: 12, marginBottom: 4 }} />
-            <JoinBatchSheet
+            <JoinBudgetSheet
               onJoined={handleJoined}
               onClose={() => setShowJoin(false)}
             />

@@ -14,7 +14,7 @@ import {
   InviteCode,
 } from '@eb-packages/logic';
 
-interface ShareBatchSheetProps {
+interface ShareBudgetSheetProps {
   batchId: string;
   batchName: string;
   batchIcon: string;
@@ -22,7 +22,7 @@ interface ShareBatchSheetProps {
   onClose: () => void;
 }
 
-export const ShareBatchSheet: React.FC<ShareBatchSheetProps> = ({
+export const ShareBudgetSheet: React.FC<ShareBudgetSheetProps> = ({
   batchId,
   batchName,
   batchIcon,
