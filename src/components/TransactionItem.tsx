@@ -11,8 +11,7 @@ interface TransactionItemProps {
 export const TransactionItem: React.FC<TransactionItemProps> = ({
   transaction,
 }) => {
-  const isNegative = transaction.amount < 0;
-  // Format relative time (e.g., "hace 10 min")
+  // All transactions in Minimal Money are expenses — amounts are always positive.
   const timeAgo = formatDistanceToNow(new Date(transaction.timestamp), {
     addSuffix: true,
     locale: es,
@@ -30,10 +29,10 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         <Text
           style={[
             styles.amountText,
-            { color: isNegative ? '#FF453A' : '#30D158' },
+            { color: '#FF453A' },
           ]}
         >
-          {isNegative ? '- ' : '+ '}$ {Math.abs(transaction.amount).toFixed(2)}
+          - $ {Math.abs(transaction.amount).toFixed(2)}
         </Text>
       </View>
     </View>
