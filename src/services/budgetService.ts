@@ -34,16 +34,6 @@ export const BudgetService = {
       });
     }
 
-    const loadedBatches: Batch[] = (batchesResult.data || []).map(b => ({
-      id: b.id,
-      name: b.name,
-      icon: b.icon,
-      monthlyLimit: Number(b.monthly_limit),
-      currentBalance: Number(b.current_balance),
-      sharedWith: b.shared_with || [],
-      createdAt: Number(b.created_at_ts),
-    }));
-
     const loadedTransactions: Transaction[] = (transactionsResult.data || []).map(t => ({
       id: t.id.toString(),
       batchId: t.batch_id,
@@ -54,6 +44,27 @@ export const BudgetService = {
       name: t.name,
       category: t.category || undefined,
     }));
+
+    // Derive currentBalance from transactions instead of trusting the stale DB column.
+    // current_balance in the DB is never updated after addTransaction (no RPC/trigger yet).
+    const spentPerBatch: Record<string, number> = {};
+    for (const t of loadedTransactions) {
+      spentPerBatch[t.batchId] = (spentPerBatch[t.batchId] ?? 0) + t.amount;
+    }
+
+    const loadedBatches: Batch[] = (batchesResult.data || []).map(b => {
+      const monthlyLimit = Number(b.monthly_limit);
+      const spent = spentPerBatch[b.id] ?? 0;
+      return {
+        id: b.id,
+        name: b.name,
+        icon: b.icon,
+        monthlyLimit,
+        currentBalance: monthlyLimit - spent,
+        sharedWith: b.shared_with || [],
+        createdAt: Number(b.created_at_ts),
+      };
+    });
 
     return {
       batches: loadedBatches,
