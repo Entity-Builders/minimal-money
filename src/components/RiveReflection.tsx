@@ -17,17 +17,22 @@ export const RiveReflection: React.FC<RiveReflectionProps> = ({
 }) => {
   const riveRef = React.useRef<RiveRef>(null);
 
+  const applyValue = React.useCallback((v: number) => {
+    riveRef.current?.setNumber('Number property', v);
+    riveRef.current?.play();
+  }, []);
+
+  // Apply value on initial mount (after Rive has had a tick to initialize)
   React.useEffect(() => {
-    if (riveRef.current) {
-      console.log('RiveReflection: value', value);
-      // We need to know the specific input name from the Rive file.
-      // Usually it's "Number" or "Level" or similar.
-      // For now I'll assume "number" based on the file name, but this might need adjustment.
-      // The file name is 'number_reflection_with_data_binding', which implies 'number' might be the input.
-      riveRef.current?.setNumber('Number property', value);
-      riveRef.current?.play();
-    }
-  }, [value]);
+    const timer = setTimeout(() => applyValue(value), 100);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Re-apply when value changes (e.g. after adding a transaction)
+  React.useEffect(() => {
+    applyValue(value);
+  }, [value, applyValue]);
 
   return (
     <View style={[styles.container, style]}>

@@ -246,6 +246,7 @@ export default function MainScreen() {
                   </TouchableOpacity>
                 </View>
                 <BudgetFocusDisplay
+                  key={item.id}
                   totalAvailable={item.currentBalance}
                   isRecoveryMode={false}
                   onPress={handleOpenHistory}
