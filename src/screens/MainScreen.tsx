@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -67,6 +67,14 @@ export default function MainScreen() {
   const flatListRef = useRef<FlatList>(null);
   const isScrollingProgrammatically = useRef(false);
 
+  // When all batches are removed, go back to onboarding (empty state)
+  useEffect(() => {
+    if (!activeBatchId && batches.length === 0) {
+      // Reset hasOnboarded so user can add a new budget
+      navigation.reset({ index: 0, routes: [{ name: 'Onboarding' }] });
+    }
+  }, [batches.length, activeBatchId, navigation]);
+
   // Sharing modal state
   const [shareTarget, setShareTarget] = useState<Batch | null>(null);
   const [showJoin, setShowJoin] = useState(false);
@@ -109,7 +117,7 @@ export default function MainScreen() {
     }
   }).current;
 
-  const activeBatch = batches.find((b) => b.id === activeBatchId) || batches[0];
+  const activeBatch = batches.find((b) => b.id === activeBatchId) ?? null;
 
   const getColorForBatch = (id: string) => {
     const colors = [
@@ -292,7 +300,7 @@ export default function MainScreen() {
       <Animated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }, animatedStyle]} pointerEvents={isInputFocused ? 'none' : 'box-none'}>
         <HistoryBottomSheet
           ref={bottomSheetRef}
-          bgColor={getColorForBatch(activeBatch.id)}
+          bgColor={getColorForBatch(activeBatch?.id ?? '')}
           navigateTo={() => navigation.navigate('History')}
           onChange={(index) => setIsSheetOpen(index > 0)}
         />
