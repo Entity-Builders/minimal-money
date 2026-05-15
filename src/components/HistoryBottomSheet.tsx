@@ -26,19 +26,21 @@ import { MinimalTheme } from '../theme';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
+const BgColorContext = React.createContext<string>(MinimalTheme.glass.background);
+
 const CustomBackground: React.FC<BottomSheetBackgroundProps> = ({
   style,
   animatedIndex,
 }) => {
+  const bgColor = React.useContext(BgColorContext);
+
   const containerAnimatedStyle = useAnimatedStyle(() => {
-    // Animate border radius from 24 (at index 1 or below) to 0 (at index 2 - full screen)
     const borderRadius = interpolate(
       animatedIndex.value,
       [1, 2],
       [24, 0],
       Extrapolation.CLAMP,
     );
-
     return {
       borderTopLeftRadius: borderRadius,
       borderTopRightRadius: borderRadius,
@@ -52,21 +54,27 @@ const CustomBackground: React.FC<BottomSheetBackgroundProps> = ({
       [10, 50],
       Extrapolation.CLAMP,
     );
-    return {
-      intensity,
-    };
+    return { intensity };
+  });
+
+  const glassAnimatedStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      animatedIndex.value,
+      [0, 0.2, 1],
+      [0, 1, 1],
+      Extrapolation.CLAMP,
+    );
+    return { opacity };
   });
 
   const overlayAnimatedStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
       animatedIndex.value,
       [-1, 0, 1],
-      [0, 0.7, 0.7], // Fade in to 0.7 at index 0, stay 0.7
+      [0, 0, 0.7],
       Extrapolation.CLAMP,
     );
-    return {
-      opacity,
-    };
+    return { opacity };
   });
 
   return (
@@ -75,45 +83,46 @@ const CustomBackground: React.FC<BottomSheetBackgroundProps> = ({
         style,
         containerAnimatedStyle,
         {
-          backgroundColor: MinimalTheme.glass.background,
+          backgroundColor: bgColor,
           overflow: 'hidden',
         },
       ]}
     >
-      <AnimatedBlurView
-        animatedProps={animatedProps}
-        tint="systemMaterialDark"
-        style={StyleSheet.absoluteFill}
-      />
-      <LinearGradient
-        colors={[
-          MinimalTheme.glass.gradient.start,
-          MinimalTheme.glass.gradient.end,
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.3 }}
-        style={StyleSheet.absoluteFill}
-      />
-      {/* Subtle border */}
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          containerAnimatedStyle,
-          {
-            borderWidth: 1,
-            borderColor: MinimalTheme.glass.border,
-          },
-        ]}
-      />
-      <Animated.View
-        style={[
-          {
-            ...StyleSheet.absoluteFillObject,
-            backgroundColor: 'black',
-          },
-          overlayAnimatedStyle,
-        ]}
-      />
+      <Animated.View style={[StyleSheet.absoluteFill, glassAnimatedStyle]}>
+        <AnimatedBlurView
+          animatedProps={animatedProps}
+          tint="systemMaterialDark"
+          style={StyleSheet.absoluteFill}
+        />
+        <LinearGradient
+          colors={[
+            MinimalTheme.glass.gradient.start,
+            MinimalTheme.glass.gradient.end,
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 0.3 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFill,
+            containerAnimatedStyle,
+            {
+              borderWidth: 1,
+              borderColor: MinimalTheme.glass.border,
+            },
+          ]}
+        />
+        <Animated.View
+          style={[
+            {
+              ...StyleSheet.absoluteFillObject,
+              backgroundColor: 'black',
+            },
+            overlayAnimatedStyle,
+          ]}
+        />
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -121,6 +130,7 @@ const CustomBackground: React.FC<BottomSheetBackgroundProps> = ({
 interface HistoryBottomSheetProps {
   navigateTo: () => void;
   onChange?: (index: number) => void;
+  bgColor?: string;
 }
 
 export const HistoryBottomSheet = forwardRef<
@@ -128,10 +138,8 @@ export const HistoryBottomSheet = forwardRef<
   HistoryBottomSheetProps
 >((props, ref) => {
   const insets = useSafeAreaInsets();
-  // removed internal navigation usages in favor of prop
   const internalRef = React.useRef<BottomSheet>(null);
 
-  // Expose the internal ref to the parent
   React.useImperativeHandle(
     ref,
     () =>
@@ -146,16 +154,15 @@ export const HistoryBottomSheet = forwardRef<
       }) as any,
   );
 
-  const { expensesToday, spentToday, removeExpense, dailyBudget } = useBudget();
+  const { activeBatchTransactions, removeTransaction, activeBatch } = useBudget();
   const contentOpacity = useSharedValue(1);
   const animatedIndex = useSharedValue(0);
   const theme = useTheme();
 
   const animatedContentStyle = useAnimatedStyle(() => {
-    // Hide content at index 0 (collapsed), show at index 1 (expanded)
     const visibilityOpacity = interpolate(
       animatedIndex.value,
-      [0, 0.8], // Start fading in immediately after index 0, fully visible by 0.8
+      [0, 0.8],
       [0, 1],
       Extrapolation.CLAMP,
     );
@@ -165,58 +172,39 @@ export const HistoryBottomSheet = forwardRef<
     };
   });
 
-  // variables
-  // Snap points:
-  // First point: Safe area bottom + 40px for handle visibility
-  // '60%': The open state
   const snapPoints = useMemo(
     () => [insets.bottom + 40, '60%', '100%'],
     [insets.bottom],
   );
 
-  // Transform expenses to transactions for display
   const transactions: Transaction[] = useMemo(() => {
-    return expensesToday
-      .map(e => ({
-        id: e.id,
-        // Expenses are stored as positive numbers but we typically show them as negative in transaction lists
-        amount: -e.amount,
-        currency: e.currency,
-        timestamp: e.timestamp,
-        name: e.name,
-      }))
-      .sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-      );
-  }, [expensesToday]);
+    return activeBatchTransactions.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
+  }, [activeBatchTransactions]);
+
+  const spentInBatch = useMemo(() => {
+    return transactions.reduce((acc, t) => acc + t.amount, 0);
+  }, [transactions]);
 
   const resetOpacity = () => {
-    // Small delay to ensure navigation transition has started effectively
     setTimeout(() => {
       contentOpacity.value = 1;
-      // Optionally snap back to default state?
       internalRef.current?.snapToIndex(0);
     }, 500);
   };
 
   const handleExpandAndShowHistory = () => {
-    // 1. Expand fully (using the last snap point programmatically)
     internalRef.current?.snapToIndex(snapPoints.length - 1 + 1);
-
-    // 2. Fade out content
     contentOpacity.value = withTiming(0, { duration: 300 }, finished => {
       if (finished) {
-        // 3. Navigate after animation
         runOnJS(props.navigateTo)();
-
-        // 4. Reset opacity after a short delay so it's visible next time
         runOnJS(resetOpacity)();
       }
     });
   };
 
-  // render item
   const renderRightActions = (id: string, progress: any, drag: any) => {
     return (
       <View
@@ -227,7 +215,7 @@ export const HistoryBottomSheet = forwardRef<
       >
         <TouchableOpacity
           style={styles.deleteButton}
-          onPress={() => removeExpense(id)}
+          onPress={() => removeTransaction(id)}
         >
           <Ionicons
             name="trash-outline"
@@ -260,82 +248,79 @@ export const HistoryBottomSheet = forwardRef<
   }, []);
 
   return (
-    <BottomSheet
-      ref={internalRef}
-      index={0}
-      snapPoints={snapPoints}
-      backgroundComponent={CustomBackground}
-      handleIndicatorStyle={styles.indicator}
-      animatedIndex={animatedIndex}
-      onChange={props.onChange}
-    >
-      <Animated.View
-        style={[
-          styles.contentContainer,
-          { paddingTop: insets.top },
-          animatedContentStyle,
-        ]}
+    <BgColorContext.Provider value={props.bgColor ?? MinimalTheme.glass.background}>
+      <BottomSheet
+        ref={internalRef}
+        index={0}
+        snapPoints={snapPoints}
+        backgroundComponent={CustomBackground}
+        handleIndicatorStyle={styles.indicator}
+        animatedIndex={animatedIndex}
+        onChange={props.onChange}
       >
-        {/* Sticky Header inside the sheet */}
-        <View style={styles.header}>
-          <Text
-            variant="bodyMedium"
-            style={{ color: theme.colors.onSurfaceVariant, marginBottom: 4 }}
-          >
-            Hoy has gastado:{' '}
+        <Animated.View
+          style={[
+            styles.contentContainer,
+            { paddingTop: insets.top },
+            animatedContentStyle,
+          ]}
+        >
+          <View style={styles.header}>
             <Text
-              variant="titleLarge"
-              style={{
-                color:
-                  spentToday > dailyBudget
-                    ? theme.colors.error
-                    : theme.colors.onSurface,
-                fontWeight: 'bold',
-              }}
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurfaceVariant, marginBottom: 4 }}
             >
-              ${spentToday.toFixed(0)}
+              Has gastado:{' '}
+              <Text
+                variant="titleLarge"
+                style={{
+                  color: theme.colors.onSurface,
+                  fontWeight: 'bold',
+                }}
+              >
+                ${spentInBatch.toFixed(0)}
+              </Text>
             </Text>
-          </Text>
-          <Text
-            variant="bodySmall"
-            style={{ color: theme.colors.onSurfaceVariant }}
-          >
-            {transactions.length} transacciones
-          </Text>
-        </View>
-
-        <BottomSheetFlatList
-          data={transactions}
-          keyExtractor={(item: Transaction) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          style={styles.list}
-          ListFooterComponent={() => (
-            <Button
-              mode="text"
-              onPress={handleExpandAndShowHistory}
-              contentStyle={{
-                flexDirection: 'row-reverse',
-                paddingVertical: 8,
-              }}
-              labelStyle={{
-                fontSize: 14,
-                color: theme.colors.onSurfaceVariant,
-              }}
-              icon="arrow-right"
-              textColor={theme.colors.onSurfaceVariant}
+            <Text
+              variant="bodySmall"
+              style={{ color: theme.colors.onSurfaceVariant }}
             >
-              Ver historial completo
-            </Button>
-          )}
-        />
-      </Animated.View>
-    </BottomSheet>
+              {transactions.length} transacciones
+            </Text>
+          </View>
+
+          <BottomSheetFlatList
+            data={transactions}
+            keyExtractor={(item: Transaction) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContent}
+            style={styles.list}
+            ListFooterComponent={() => (
+              <Button
+                mode="text"
+                onPress={handleExpandAndShowHistory}
+                contentStyle={{
+                  flexDirection: 'row-reverse',
+                  paddingVertical: 8,
+                }}
+                labelStyle={{
+                  fontSize: 14,
+                  color: theme.colors.onSurfaceVariant,
+                }}
+                icon="arrow-right"
+                textColor={theme.colors.onSurfaceVariant}
+              >
+                Ver historial completo
+              </Button>
+            )}
+          />
+        </Animated.View>
+      </BottomSheet>
+    </BgColorContext.Provider>
   );
 });
 
 const styles = StyleSheet.create({
-  // background style removed as it is handled by CustomBackground
   indicator: {
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     width: 40,
@@ -352,15 +337,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#333',
     paddingBottom: 15,
   },
-  headerTitle: {
-    // Removed specific styles in favor of Paper Text variants
-  },
-  headerAmount: {
-    // Removed specific styles in favor of Paper Text variants
-  },
-  headerCount: {
-    // Removed specific styles in favor of Paper Text variants
-  },
   list: {
     flex: 1,
   },
@@ -371,7 +347,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: 80,
-    // backgroundColor handled by theme
     height: '100%',
   },
   deleteButton: {

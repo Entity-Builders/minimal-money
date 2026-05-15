@@ -18,8 +18,8 @@ export const BudgetFocusDisplay = ({
   const amountColor = isRecoveryMode ? '#FF9F0A' : '#FFFFFF';
 
   return (
-    <TouchableOpacity onPress={onPress}>
-      <View style={styles.availableAmountContainer}>
+    <TouchableOpacity onPress={onPress} style={{ width: '100%' }}>
+      <View style={[styles.availableAmountContainer, { width: '100%' }]}>
         {isRecoveryMode ? (
           <View style={{ alignItems: 'center' }}>
             <Text style={[styles.availableAmount, { color: amountColor }]}>
@@ -56,7 +56,7 @@ export const BudgetFocusDisplay = ({
           </View>
         ) : (
           <>
-            <Text style={styles.availableLabel}>DISPONIBLE HOY</Text>
+            <Text style={styles.availableLabel}>DISPONIBLE</Text>
             <RiveReflection value={totalAvailable} />
           </>
         )}

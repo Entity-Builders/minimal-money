@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import { BudgetContextType } from '../types';
-import { calculateBudgetMetrics } from '../domain/budget';
 import { budgetReducer, initialState } from './budgetReducer';
-import { useBudgetCalculations } from '../hooks/useBudgetCalculations';
 import { useBudgetSync } from '../hooks/useBudgetSync';
 import { useBudgetActions } from '../hooks/useBudgetActions';
 
@@ -16,40 +14,20 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
   // Sync data (Auth, Loading, Listeners)
   const { loadData } = useBudgetSync(dispatch);
 
-  // Actions (Add/Remove Expense, Set Config, etc)
+  // Actions
   const actions = useBudgetActions(dispatch, loadData);
 
-  // Derived state calculations using custom hook
-  const { config, expenses } = state;
-  const budgetCalculations = useBudgetCalculations(config, expenses);
-  const { spentCurrentMonth } = budgetCalculations; // Needed for projection helper
-
-  // Helper to project budget based on hypothetical config
-  const calculateBudgetProjection = React.useCallback(
-    (
-      income: number,
-      fixedExpenses: number,
-      savingsPercentage: number,
-      additionalSpent: number = 0,
-    ) => {
-      return calculateBudgetMetrics({
-        config: { income, fixedExpenses, savingsPercentage },
-        totalSpent: spentCurrentMonth + additionalSpent,
-        currentDate: new Date(),
-      });
-    },
-    [spentCurrentMonth],
-  );
+  // Derived state
+  const activeBatch = state.batches.find(b => b.id === state.activeBatchId) || null;
+  const activeBatchTransactions = state.transactions.filter(t => t.batchId === state.activeBatchId);
 
   return (
     <BudgetContext.Provider
       value={{
         ...state,
-        ...budgetCalculations,
-        remainingDays: budgetCalculations.daysRemaining,
-        calculateBudgetProjection,
         ...actions,
-        fixedExpensesList: state.fixedExpensesList,
+        activeBatch,
+        activeBatchTransactions,
       }}
     >
       {!state.loading && children}

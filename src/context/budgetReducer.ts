@@ -1,56 +1,33 @@
 import { User } from '@supabase/supabase-js';
-import { BudgetConfig, Expense, FixedExpense } from '../types';
+import { BudgetState, Batch, Transaction } from '../types';
 
-// State Definition
-export type BudgetState = {
-  user: User | null;
-  config: BudgetConfig | null;
-  expenses: Expense[];
-  // dailyBudget removed from state as it is derived
-  hasOnboarded: boolean;
-  loading: boolean;
-  fixedExpensesList: FixedExpense[];
-};
-
-// Actions
 export type BudgetAction =
   | { type: 'SET_USER'; payload: User | null }
   | {
       type: 'SET_DATA';
       payload: {
-        config: BudgetConfig | null;
-        expenses: Expense[];
+        batches: Batch[];
+        transactions: Transaction[];
         hasOnboarded: boolean;
       };
     }
-  | {
-      type: 'SET_CONFIG';
-      payload: { config: BudgetConfig };
-    }
-  | { type: 'ADD_EXPENSE'; payload: Expense }
-  | { type: 'REMOVE_EXPENSE'; payload: string }
-  | { type: 'RESET' }
-  | { type: 'SET_FIXED_EXPENSES'; payload: FixedExpense[] }
-  | {
-      type: 'ADD_FIXED_EXPENSE';
-      payload: { expense: FixedExpense };
-    }
-  | {
-      type: 'REMOVE_FIXED_EXPENSE';
-      payload: { id: string };
-    };
+  | { type: 'ADD_BATCH'; payload: Batch }
+  | { type: 'UPDATE_BATCH'; payload: { id: string; updates: Partial<Batch> } }
+  | { type: 'REMOVE_BATCH'; payload: string }
+  | { type: 'ADD_TRANSACTION'; payload: Transaction }
+  | { type: 'REMOVE_TRANSACTION'; payload: string }
+  | { type: 'SET_ACTIVE_BATCH'; payload: string }
+  | { type: 'RESET' };
 
-// Initial State
 export const initialState: BudgetState = {
   user: null,
-  config: null,
-  expenses: [],
+  batches: [],
+  transactions: [],
   hasOnboarded: false,
   loading: true,
-  fixedExpensesList: [],
+  activeBatchId: null,
 };
 
-// Reducer
 export const budgetReducer = (
   state: BudgetState,
   action: BudgetAction,
@@ -62,65 +39,97 @@ export const budgetReducer = (
         user: action.payload,
         loading: true, // Set loading true while we fetch data for this user
       };
+      
     case 'SET_DATA':
       return {
         ...state,
         ...action.payload,
+        activeBatchId: action.payload.batches.length > 0 ? action.payload.batches[0].id : null,
         loading: false,
       };
-    case 'SET_CONFIG':
+      
+    case 'ADD_BATCH':
       return {
         ...state,
-        config: action.payload.config,
+        batches: [...state.batches, action.payload],
         hasOnboarded: true,
+        activeBatchId: state.activeBatchId || action.payload.id,
       };
-    case 'ADD_EXPENSE':
+      
+    case 'UPDATE_BATCH':
       return {
         ...state,
-        expenses: [action.payload, ...state.expenses].sort(
+        batches: state.batches.map(batch => 
+          batch.id === action.payload.id ? { ...batch, ...action.payload.updates } : batch
+        ),
+      };
+      
+    case 'REMOVE_BATCH':
+      const newBatches = state.batches.filter(b => b.id !== action.payload);
+      return {
+        ...state,
+        batches: newBatches,
+        activeBatchId: state.activeBatchId === action.payload 
+          ? (newBatches.length > 0 ? newBatches[0].id : null)
+          : state.activeBatchId,
+      };
+
+    case 'ADD_TRANSACTION': {
+      // Deduct from batch balance
+      const updatedBatches = state.batches.map(batch => {
+        if (batch.id === action.payload.batchId) {
+          return {
+            ...batch,
+            currentBalance: batch.currentBalance - action.payload.amount,
+          };
+        }
+        return batch;
+      });
+
+      return {
+        ...state,
+        batches: updatedBatches,
+        transactions: [action.payload, ...state.transactions].sort(
           (a, b) => b.timestamp - a.timestamp,
         ),
       };
-    case 'REMOVE_EXPENSE':
+    }
+
+    case 'REMOVE_TRANSACTION': {
+      const transactionToRemove = state.transactions.find(t => t.id === action.payload);
+      if (!transactionToRemove) return state;
+
+      // Add back to batch balance
+      const updatedBatches = state.batches.map(batch => {
+        if (batch.id === transactionToRemove.batchId) {
+          return {
+            ...batch,
+            currentBalance: batch.currentBalance + transactionToRemove.amount,
+          };
+        }
+        return batch;
+      });
+
       return {
         ...state,
-        expenses: state.expenses.filter(e => e.id !== action.payload),
+        batches: updatedBatches,
+        transactions: state.transactions.filter(t => t.id !== action.payload),
       };
+    }
+
+    case 'SET_ACTIVE_BATCH':
+      return {
+        ...state,
+        activeBatchId: action.payload,
+      };
+
     case 'RESET':
       return {
         ...initialState,
         loading: false,
         hasOnboarded: false,
       };
-    case 'SET_FIXED_EXPENSES':
-      return {
-        ...state,
-        fixedExpensesList: action.payload,
-      };
-    case 'ADD_FIXED_EXPENSE': {
-      const newList = [...state.fixedExpensesList, action.payload.expense];
-      const newTotal = newList.reduce((sum, item) => sum + item.amount, 0);
-      return {
-        ...state,
-        fixedExpensesList: newList,
-        config: state.config
-          ? { ...state.config, fixedExpenses: newTotal }
-          : null,
-      };
-    }
-    case 'REMOVE_FIXED_EXPENSE': {
-      const newList = state.fixedExpensesList.filter(
-        item => item.id !== action.payload.id,
-      );
-      const newTotal = newList.reduce((sum, item) => sum + item.amount, 0);
-      return {
-        ...state,
-        fixedExpensesList: newList,
-        config: state.config
-          ? { ...state.config, fixedExpenses: newTotal }
-          : null,
-      };
-    }
+
     default:
       return state;
   }

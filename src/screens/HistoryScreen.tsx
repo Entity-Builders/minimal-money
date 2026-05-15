@@ -1,96 +1,38 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SectionList,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBudget } from '../context/useBudget';
-import { Transaction, Currency } from '../types';
+import { Transaction } from '../types';
 import { TransactionItem } from '../components/TransactionItem';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import { supabase } from '@eb-packages/logic';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-
-type HistoryExpense = {
-  id: string;
-  amount: number;
-  originalAmount: number;
-  currency: Currency;
-  timestamp: number;
-  name: string;
-  category?: string;
-};
-
 import { useTheme } from 'react-native-paper';
 import Animated, { FadeIn } from 'react-native-reanimated';
-
 import { HistoryHeader } from '../components/HistoryHeader';
 
 export default function HistoryScreen() {
-  const { user, dailyBudget, isRecoveryMode, spentToday } = useBudget();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [historyExpenses, setHistoryExpenses] = useState<HistoryExpense[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { activeBatchTransactions, activeBatch } = useBudget();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data: expensesData, error } = await supabase
-          .from('expenses')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('date', { ascending: false });
-
-        if (error) {
-          console.error('Error fetching history:', error);
-          return;
-        }
-
-        const loadedExpenses: HistoryExpense[] = (expensesData || []).map(
-          e => ({
-            id: e.id.toString(),
-            amount: Number(e.amount),
-            originalAmount: Number(e.original_amount) || Number(e.amount),
-            currency: (e.currency as Currency) || 'ARS',
-            timestamp: new Date(e.date || e.created_at).getTime(),
-            name: e.name,
-            category: e.category || undefined,
-          }),
-        );
-
-        setHistoryExpenses(loadedExpenses);
-      } catch (e) {
-        console.error('Failed to load history from Supabase', e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHistory();
-  }, [user]);
-
   // Refined Logic with Filtering
   const sortedSections = useMemo(() => {
     // 1. Filter first
-    let filtered = historyExpenses;
+    let filtered = activeBatchTransactions;
     if (searchQuery.trim().length > 0) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -133,12 +75,8 @@ export default function HistoryScreen() {
 
       const lastGroup = groups[groups.length - 1];
       const transaction: Transaction = {
-        id: expense.id,
+        ...expense,
         amount: -expense.amount,
-        currency: expense.currency,
-        timestamp: expense.timestamp,
-        name: expense.name,
-        category: expense.category,
       };
 
       if (lastGroup && lastGroup.title === title) {
@@ -149,31 +87,13 @@ export default function HistoryScreen() {
     });
 
     return groups;
-  }, [historyExpenses, searchQuery]);
+  }, [activeBatchTransactions, searchQuery]);
 
-  if (loading) {
-    return (
-      <SafeAreaView
-        edges={['top', 'bottom']}
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
-        <ActivityIndicator size="large" color="#fff" />
-      </SafeAreaView>
-    );
-  }
-
-  // Calculate total saved to show in header title area potentially, or just use it for rendering logic
-  const totalSavedToday = dailyBudget - spentToday; // spentToday is from context, but we might want the filtered list total?
-  // Actually, the user just wants the visual update.
 
   return (
     <View style={styles.container}>
       {/* Deep, subtle gradient background */}
       <LinearGradient
-        // Deep teal-black gradient for "Liquid" feel or just subtle gray
         colors={['#000000', '#111822', '#000000']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -208,92 +128,71 @@ export default function HistoryScreen() {
         }}
       />
 
-      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1 }}>
-        <Animated.View style={{ flex: 1 }} entering={FadeIn.duration(800)}>
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}
-            >
-              <Ionicons name="arrow-back" size={24} color="#fff" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Historial</Text>
-          </View>
+      <Animated.View style={{ flex: 1 }} entering={FadeIn.duration(800)}>
+        <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Historial ({activeBatch?.name})</Text>
+        </View>
 
-          <View style={{ flex: 1 }}>
-            <HistoryHeader
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-            />
-            <SectionList
-              sections={sortedSections}
-              keyExtractor={item => item.id}
-              renderItem={({ item }) => <TransactionItem transaction={item} />}
-              renderSectionHeader={({ section: { title, data } }) => {
-                const totalExpense = data.reduce(
-                  (acc, curr) => (curr.amount < 0 ? acc + curr.amount : acc),
-                  0,
-                );
+        <View style={{ flex: 1 }}>
+          <HistoryHeader
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
+          <SectionList
+            sections={sortedSections}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => <TransactionItem transaction={item} />}
+            renderSectionHeader={({ section: { title, data } }) => {
+              const totalExpense = data.reduce(
+                (acc, curr) => (curr.amount < 0 ? acc + curr.amount : acc),
+                0,
+              );
 
-                // Simplified calculations for display
-                const dailySaved = dailyBudget + totalExpense;
-                const isOverspent = dailySaved < 0;
-                const isToday = title === 'Hoy';
-
-                return (
-                  <BlurView
-                    intensity={80}
-                    tint="dark"
-                    style={styles.stickyHeaderContainer}
-                  >
-                    <View style={styles.sectionHeaderContent}>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          gap: 8,
-                        }}
-                      >
-                        <Text style={styles.sectionTitle}>{title}</Text>
-                        {isOverspent && (
-                          <Text style={{ fontSize: 16 }}>⚠️</Text>
-                        )}
-                        {isToday && isRecoveryMode && (
-                          <Text
-                            style={[
-                              styles.sectionTitle,
-                              { fontSize: 12, color: '#FF9F0A' },
-                            ]}
-                          >
-                            (Reducido)
-                          </Text>
-                        )}
-                      </View>
-
-                      <View style={styles.headerTotals}>
-                        {/* Show net for the day/group */}
-                        <Text
-                          style={[
-                            styles.incomeText,
-                            { color: dailySaved >= 0 ? '#30D158' : '#FF453A' },
-                          ]}
-                        >
-                          {dailySaved >= 0 ? '+' : ''}${dailySaved.toFixed(2)}
-                        </Text>
-                      </View>
+              return (
+                <BlurView
+                  intensity={80}
+                  tint="dark"
+                  style={styles.stickyHeaderContainer}
+                >
+                  <View style={styles.sectionHeaderContent}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}
+                    >
+                      <Text style={styles.sectionTitle}>{title}</Text>
                     </View>
-                    {/* Bottom border for separation */}
-                    <View style={styles.headerBorder} />
-                  </BlurView>
-                );
-              }}
-              contentContainerStyle={styles.listContent}
-              stickySectionHeadersEnabled={true}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
-        </Animated.View>
-      </SafeAreaView>
+
+                    <View style={styles.headerTotals}>
+                      <Text
+                        style={[
+                          styles.incomeText,
+                          { color: '#FF453A' },
+                        ]}
+                      >
+                        ${Math.abs(totalExpense).toFixed(2)}
+                      </Text>
+                    </View>
+                  </View>
+                  {/* Bottom border for separation */}
+                  <View style={styles.headerBorder} />
+                </BlurView>
+              );
+            }}
+            contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 20 }]}
+            stickySectionHeadersEnabled={true}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+      </Animated.View>
     </View>
   );
 }
@@ -302,11 +201,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000', // Fallback
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',

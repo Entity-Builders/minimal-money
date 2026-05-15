@@ -1,38 +1,37 @@
 import React from 'react';
-import { Text, TouchableOpacity, ViewStyle } from 'react-native';
-import { LiquidGlass } from '../../LiquidGlass';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface ContinueButtonProps {
   onPress: () => void;
-  style?: ViewStyle;
 }
 
-export const ContinueButton = ({ onPress, style }: ContinueButtonProps) => {
+export const ContinueButton = ({ onPress }: ContinueButtonProps) => {
   return (
-    <LiquidGlass
-      variant="default"
-      intensity={10}
-      style={[
-        {
-          padding: 20,
-          alignItems: 'flex-end',
-        },
-        style,
-      ]}
+    <View
+      style={{
+        backgroundColor: '#1C1C1E',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        borderTopWidth: 1,
+        borderTopColor: '#2C2C2E',
+      }}
     >
       <TouchableOpacity
         onPress={onPress}
         style={{
-          backgroundColor: '#000',
-          paddingHorizontal: 16,
-          paddingVertical: 8,
-          borderRadius: 20,
+          backgroundColor: '#30D158',
+          paddingHorizontal: 24,
+          paddingVertical: 10,
+          borderRadius: 22,
         }}
       >
-        <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>
-          Continuar
+        <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15, letterSpacing: 0.3 }}>
+          OK ✓
         </Text>
       </TouchableOpacity>
-    </LiquidGlass>
+    </View>
   );
 };

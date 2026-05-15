@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Currency } from '../types';
 
 interface UseExpenseInputProps {
-  addExpense: (
+  addTransaction: (
     amount: number,
     currency: Currency,
     exchangeRate: number,
@@ -19,7 +19,7 @@ interface UseExpenseInputProps {
 const STORAGE_KEY_CURRENCY = 'minimal_money_last_currency';
 
 export const useExpenseInput = ({
-  addExpense,
+  addTransaction,
   rates,
   getRate,
 }: UseExpenseInputProps) => {
@@ -84,14 +84,12 @@ export const useExpenseInput = ({
 
       if (val > 0) {
         const rateToUse = getRate(currency);
-        await addExpense(val, currency, rateToUse, undefined, finalName);
+        await addTransaction(val, currency, rateToUse, undefined, finalName);
 
         // Reset inputs but KEEP currency and KEEP focus behavior if desired
-        // Actually typical flow: user submits -> fields clear -> ready for next input
         setAmount('');
         setExpenseDetail('');
         setStep('amount');
-        // Do NOT reset currency ('setCurrency(...)')
         setShouldAutoFocus(false);
         Keyboard.dismiss();
       }

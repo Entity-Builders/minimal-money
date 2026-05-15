@@ -1,127 +1,88 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  KeyboardAvoidingView, 
+  Platform, 
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { styles } from './OnboardingStyles';
-import { StepIncome } from '../components/onboarding/StepIncome';
-import { StepFixed } from '../components/onboarding/StepFixed';
-import { StepInitialExpenses } from '../components/onboarding/StepInitialExpenses';
-import { StepSavings } from '../components/onboarding/StepSavings';
-import { StepPreview } from '../components/onboarding/StepPreview';
 
-export default function OnboardingScreen() {
-  const {
-    step,
-    setStep,
-    income,
-    setIncome,
-    incomeType,
-    setIncomeType,
-    fixed,
-    setFixed,
-    savings,
-    setSavings,
-    initialExpenses,
-    setInitialExpenses,
-    workingDays,
-    workingHours,
-    currentMonth,
-    getMonthlyIncome,
-    handleNext,
-    handleBack,
-  } = useOnboarding();
+export const OnboardingScreen: React.FC = () => {
+  const { name, setName, icon, setIcon, monthlyLimit, setMonthlyLimit, loading, finishOnboarding } = useOnboarding();
 
-  const renderStep = () => {
-    switch (step) {
-      case 0:
-        return (
-          <StepIncome
-            income={income}
-            setIncome={setIncome}
-            incomeType={incomeType}
-            setIncomeType={setIncomeType}
-            getMonthlyIncome={getMonthlyIncome}
-            currentMonth={currentMonth}
-            workingDays={workingDays}
-            workingHours={workingHours}
-          />
-        );
-      case 1:
-        return <StepFixed fixed={fixed} setFixed={setFixed} />;
-      case 2:
-        return (
-          <StepInitialExpenses
-            initialExpenses={initialExpenses}
-            setInitialExpenses={setInitialExpenses}
-          />
-        );
-      case 3:
-        return (
-          <StepSavings
-            savings={savings}
-            setSavings={setSavings}
-            getMonthlyIncome={getMonthlyIncome}
-            fixed={fixed}
-            initialExpenses={initialExpenses}
-          />
-        );
-      case 4:
-        return (
-          <StepPreview
-            getMonthlyIncome={getMonthlyIncome}
-            fixed={fixed}
-            initialExpenses={initialExpenses}
-            savings={savings}
-          />
-        );
-      default:
-        return null;
-    }
-  };
+  const isFormValid = name.trim().length > 0 && monthlyLimit.trim().length > 0 && parseFloat(monthlyLimit) > 0;
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.content}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.content}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View style={styles.progressContainer}>
-            <View
-              style={[
-                styles.progressBar,
-                { width: `${((step + 1) / 5) * 100}%` },
-              ]}
+            <View style={[styles.progressBar, { width: '100%' }]} />
+          </View>
+
+          <Text style={styles.headerText}>Create your first Budget</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Icon</Text>
+            <TextInput
+              style={[styles.input, styles.iconInput]}
+              value={icon}
+              onChangeText={setIcon}
+              placeholder="🛒"
+              placeholderTextColor="#444"
+              maxLength={2}
             />
           </View>
 
-          {renderStep()}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Supermercado"
+              placeholderTextColor="#444"
+              autoCapitalize="words"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Monthly Limit</Text>
+            <TextInput
+              style={styles.input}
+              value={monthlyLimit}
+              onChangeText={setMonthlyLimit}
+              keyboardType="numeric"
+              placeholder="0"
+              placeholderTextColor="#444"
+            />
+          </View>
 
           <View style={styles.buttonRow}>
-            {step > 0 ? (
-              <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-                <Text style={styles.backButtonText}>Atrás</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.buttonPlaceholder} />
-            )}
-
-            <TouchableOpacity style={styles.button} onPress={handleNext}>
-              <Text style={styles.buttonText}>
-                {step === 4 ? 'Empezar' : 'Siguiente'}
+            <TouchableOpacity 
+              style={[styles.button, (!isFormValid || loading) && styles.buttonDisabled]}
+              onPress={finishOnboarding}
+              disabled={loading || !isFormValid}
+            >
+              <Text style={[styles.buttonText, (!isFormValid || loading) && styles.buttonTextDisabled]}>
+                {loading ? 'Creating...' : 'Start Budgeting'}
               </Text>
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
-}
+};

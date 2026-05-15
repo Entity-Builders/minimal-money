@@ -15,14 +15,10 @@ export const useBudgetSync = (dispatch: React.Dispatch<BudgetAction>) => {
         dispatch({
           type: 'SET_DATA',
           payload: {
-            config: data.config,
-            expenses: data.expenses,
+            batches: data.batches,
+            transactions: data.transactions,
             hasOnboarded: data.hasOnboarded,
           },
-        });
-        dispatch({
-          type: 'SET_FIXED_EXPENSES',
-          payload: data.fixedExpenses,
         });
       } catch (e) {
         console.error('Failed to load budget data', e);
@@ -30,8 +26,8 @@ export const useBudgetSync = (dispatch: React.Dispatch<BudgetAction>) => {
         dispatch({
           type: 'SET_DATA',
           payload: {
-            config: null,
-            expenses: [],
+            batches: [],
+            transactions: [],
             hasOnboarded: false,
           },
         });
@@ -53,8 +49,8 @@ export const useBudgetSync = (dispatch: React.Dispatch<BudgetAction>) => {
         dispatch({
           type: 'SET_DATA',
           payload: {
-            config: null,
-            expenses: [],
+            batches: [],
+            transactions: [],
             hasOnboarded: false,
           },
         });

@@ -1,132 +1,169 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
   Text,
+  View,
+  TextInput,
+  ActivityIndicator,
+  Modal,
+  Pressable,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettingsScreen } from '../hooks/useSettingsScreen';
 import { styles } from './SettingsScreenStyles';
 import { SettingsHeader } from '../components/settings/SettingsHeader';
-import { IncomeCard } from '../components/settings/IncomeCard';
-import { FixedExpensesCard } from '../components/settings/FixedExpensesCard';
-import { SavingsCard } from '../components/settings/SavingsCard';
-import { ActionButtons } from '../components/settings/ActionButtons';
-import { QuickAddModal } from '../components/settings/QuickAddModal';
-import { ScanExpenseModal } from '../components/scan/ScanExpenseModal';
-import { MonthlySummaryCard } from '../components/settings/MonthlySummaryCard';
+import { Ionicons } from '@expo/vector-icons';
+import { JoinBatchSheet } from '../components/sharing/JoinBatchSheet';
 
 export default function SettingsScreen() {
   const {
-    income,
-    setIncome,
-    expensesList,
-    savingsPercent,
-    setSavingsPercent,
-    accordionOpen,
-    toggleAccordion,
-    arrowRotation,
-    newExpenseName,
-    setNewExpenseName,
-    newExpenseAmount,
-    setNewExpenseAmount,
-    isAddingExpense,
-    setIsAddingExpense,
-    handleAddExpense,
-    removeExpense,
-    handleSave,
-    handleReset,
-    incomeNum,
-    totalFixedExpenses,
-    savingsAmount,
-    monthlyVariableBudget,
-    spentCurrentMonth,
-    dailySpendingPool,
-    calculatedDaily,
-    accumulatedSavings,
-    isQuickAddOpen,
-    setIsQuickAddOpen,
-    handleAddMultipleExpenses,
-    isScanModalOpen,
-    setIsScanModalOpen,
-    handleAddScannedFixedExpenses,
-    hasChanges,
+    user,
+    batches,
+    name,
+    setName,
+    icon,
+    setIcon,
+    limit,
+    setLimit,
+    loading,
+    handleCreateBatch,
+    handleDeleteBatch,
     handleLogout,
-    plannedDailyBudget,
   } = useSettingsScreen();
+
+  const insets = useSafeAreaInsets();
+  const [showJoin, setShowJoin] = useState(false);
 
   return (
     <SafeAreaView style={styles.container}>
       <SettingsHeader />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { padding: 20 }]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <IncomeCard income={income} setIncome={setIncome} />
+          <Text style={{ fontSize: 18, color: '#FFFFFF', fontWeight: 'bold', marginBottom: 15 }}>
+            Account
+          </Text>
+          <Text style={{ fontSize: 14, color: '#A0A0A0', marginBottom: 20 }}>
+            {user?.email}
+          </Text>
 
-          <FixedExpensesCard
-            totalFixedExpenses={totalFixedExpenses}
-            toggleAccordion={toggleAccordion}
-            accordionOpen={accordionOpen}
-            arrowRotation={arrowRotation}
-            expensesList={expensesList}
-            removeExpense={removeExpense}
-            isAddingExpense={isAddingExpense}
-            newExpenseName={newExpenseName}
-            setNewExpenseName={setNewExpenseName}
-            newExpenseAmount={newExpenseAmount}
-            setNewExpenseAmount={setNewExpenseAmount}
-            handleAddExpense={handleAddExpense}
-            setIsAddingExpense={setIsAddingExpense}
-            onOpenQuickAdd={() => setIsQuickAddOpen(true)}
-            onOpenScan={() => setIsScanModalOpen(true)}
-          />
+          <Text style={{ fontSize: 18, color: '#FFFFFF', fontWeight: 'bold', marginBottom: 15, marginTop: 20 }}>
+            Your Batches
+          </Text>
 
-          <SavingsCard
-            savingsAmount={savingsAmount}
-            savingsPercent={savingsPercent}
-            setSavingsPercent={setSavingsPercent}
-          />
+          {batches.map(batch => (
+            <View key={batch.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1E1E1E', padding: 15, borderRadius: 10, marginBottom: 10 }}>
+              <Text style={{ fontSize: 24, marginRight: 15 }}>{batch.icon}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 16, color: '#FFFFFF', fontWeight: '500' }}>{batch.name}</Text>
+                <Text style={{ fontSize: 14, color: '#A0A0A0' }}>${batch.monthlyLimit} / month</Text>
+              </View>
+              <TouchableOpacity onPress={() => handleDeleteBatch(batch.id)} style={{ padding: 10 }}>
+                <Ionicons name="trash-outline" size={20} color="#FF4444" />
+              </TouchableOpacity>
+            </View>
+          ))}
 
-          <MonthlySummaryCard
-            incomeNum={incomeNum}
-            totalFixedExpenses={totalFixedExpenses}
-            savingsPercent={savingsPercent}
-            savingsAmount={savingsAmount}
-            monthlyVariableBudget={monthlyVariableBudget}
-            spentCurrentMonth={spentCurrentMonth}
-            dailySpendingPool={dailySpendingPool}
-            calculatedDaily={calculatedDaily}
-            accumulatedSavings={accumulatedSavings}
-            hasIncome={!!income}
-            plannedDailyBudget={plannedDailyBudget}
-          />
+          <Text style={{ fontSize: 18, color: '#FFFFFF', fontWeight: 'bold', marginBottom: 15, marginTop: 30 }}>
+            Create New Batch
+          </Text>
+          <View style={{ backgroundColor: '#1E1E1E', padding: 15, borderRadius: 10 }}>
+            <TextInput
+              style={{ backgroundColor: '#2C2C2C', color: '#FFF', padding: 12, borderRadius: 8, marginBottom: 10 }}
+              placeholder="Icon (e.g. 🛒)"
+              placeholderTextColor="#888"
+              value={icon}
+              onChangeText={setIcon}
+            />
+            <TextInput
+              style={{ backgroundColor: '#2C2C2C', color: '#FFF', padding: 12, borderRadius: 8, marginBottom: 10 }}
+              placeholder="Batch Name (e.g. Supermarket)"
+              placeholderTextColor="#888"
+              value={name}
+              onChangeText={setName}
+            />
+            <TextInput
+              style={{ backgroundColor: '#2C2C2C', color: '#FFF', padding: 12, borderRadius: 8, marginBottom: 15 }}
+              placeholder="Monthly Limit (e.g. 500)"
+              placeholderTextColor="#888"
+              keyboardType="numeric"
+              value={limit}
+              onChangeText={setLimit}
+            />
+            <TouchableOpacity 
+              style={{ backgroundColor: '#00D1FF', padding: 15, borderRadius: 8, alignItems: 'center' }}
+              onPress={handleCreateBatch}
+              disabled={loading || !name || !limit}
+            >
+              {loading ? (
+                <ActivityIndicator color="#000" />
+              ) : (
+                <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>Create Batch</Text>
+              )}
+            </TouchableOpacity>
+          </View>
 
-          <ActionButtons
-            handleSave={handleSave}
-            handleReset={handleReset}
-            hasChanges={hasChanges}
-          />
-
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <TouchableOpacity style={[styles.logoutButton, { marginTop: 40 }]} onPress={handleLogout}>
             <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
           </TouchableOpacity>
         </KeyboardAvoidingView>
       </ScrollView>
 
-      <QuickAddModal
-        visible={isQuickAddOpen}
-        onClose={() => setIsQuickAddOpen(false)}
-        onAddExpenses={handleAddMultipleExpenses}
-      />
-      <ScanExpenseModal
-        visible={isScanModalOpen}
-        onClose={() => setIsScanModalOpen(false)}
-        onAddExpenses={handleAddScannedFixedExpenses}
-      />
+      {/* ── Join Budget CTA ──────────────────────────────── */}
+      <TouchableOpacity
+        onPress={() => setShowJoin(true)}
+        style={{
+          margin: 20,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          backgroundColor: 'rgba(48,209,88,0.12)',
+          borderWidth: 1,
+          borderColor: 'rgba(48,209,88,0.3)',
+          borderRadius: 14,
+          padding: 14,
+        }}
+      >
+        <Ionicons name="enter-outline" size={18} color="#30D158" />
+        <Text style={{ color: '#30D158', fontWeight: '700', fontSize: 15 }}>
+          Unirme a un Budget
+        </Text>
+      </TouchableOpacity>
+
+      {/* ── Join Modal ───────────────────────────────────── */}
+      <Modal
+        visible={showJoin}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowJoin(false)}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
+          onPress={() => setShowJoin(false)}
+        >
+          <Pressable
+            style={{
+              backgroundColor: '#1C1C1E',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingBottom: insets.bottom + 8,
+            }}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#444', alignSelf: 'center', marginTop: 12, marginBottom: 4 }} />
+            <JoinBatchSheet
+              onJoined={() => setShowJoin(false)}
+              onClose={() => setShowJoin(false)}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }

@@ -3,65 +3,74 @@ import * as Sentry from '@sentry/react-native';
 import { supabase } from '@eb-packages/logic';
 import { BudgetService } from '../services/budgetService';
 import { BudgetAction } from '../context/budgetReducer';
-import { BudgetConfig, Currency } from '../types';
+import { Batch, Currency } from '../types';
 
 export const useBudgetActions = (
   dispatch: React.Dispatch<BudgetAction>,
   loadData: (userId: string) => Promise<void>,
 ) => {
-  const setConfig = useCallback(
-    async (newConfig: BudgetConfig, initialExpenses: number = 0) => {
+  const addBatch = useCallback(
+    async (name: string, icon: string, monthlyLimit: number) => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('No user logged in');
-        return;
-      }
+      if (!user) return;
 
       try {
-        await BudgetService.updateConfig(user.id, newConfig, initialExpenses);
-
-        dispatch({
-          type: 'SET_CONFIG',
-          payload: { config: newConfig },
-        });
-
-        // If initial expenses were added, we need to reload or manually add them to state.
-        if (initialExpenses > 0) {
-          // Reload all data to be safe and simple
-          loadData(user.id);
-        }
+        const newBatch = await BudgetService.addBatch(user.id, { name, icon, monthlyLimit });
+        dispatch({ type: 'ADD_BATCH', payload: newBatch });
       } catch (e) {
-        console.error('Failed to save config', e);
-        Sentry.captureException(e, { tags: { context: 'setConfig' } });
+        console.error('Failed to add batch', e);
+        Sentry.captureException(e, { tags: { context: 'addBatch' } });
       }
     },
-    [dispatch, loadData],
+    [dispatch],
   );
 
-  const addExpense = useCallback(
+  const updateBatch = useCallback(
+    async (id: string, updates: Partial<Batch>) => {
+      try {
+        await BudgetService.updateBatch(id, updates);
+        dispatch({ type: 'UPDATE_BATCH', payload: { id, updates } });
+      } catch (e) {
+        console.error('Failed to update batch', e);
+        Sentry.captureException(e, { tags: { context: 'updateBatch' } });
+      }
+    },
+    [dispatch],
+  );
+
+  const removeBatch = useCallback(
+    async (id: string) => {
+      try {
+        await BudgetService.removeBatch(id);
+        dispatch({ type: 'REMOVE_BATCH', payload: id });
+      } catch (e) {
+        console.error('Failed to remove batch', e);
+        Sentry.captureException(e, { tags: { context: 'removeBatch' } });
+      }
+    },
+    [dispatch],
+  );
+
+  const addTransaction = useCallback(
     async (
+      batchId: string,
       amount: number,
       currency: Currency,
       exchangeRate: number,
-      customTimestamp?: number,
       name: string = 'Gasto',
+      customTimestamp?: number,
     ) => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      Sentry.addBreadcrumb({
-        category: 'action',
-        message: 'Adding expense',
-        data: { amount, currency, customTimestamp },
-        level: 'info',
-      });
-
       try {
-        const newExpense = await BudgetService.addExpense(user.id, {
+        // We dispatch optimistically or wait for the service
+        const newTransaction = await BudgetService.addTransaction(user.id, {
+          batchId,
           amount,
           currency,
           exchangeRate,
@@ -69,83 +78,31 @@ export const useBudgetActions = (
           name,
         });
 
-        dispatch({ type: 'ADD_EXPENSE', payload: newExpense });
+        dispatch({ type: 'ADD_TRANSACTION', payload: newTransaction });
       } catch (e) {
-        console.error('Failed to add expense', e);
-        Sentry.captureException(e, { tags: { context: 'addExpense' } });
+        console.error('Failed to add transaction', e);
+        Sentry.captureException(e, { tags: { context: 'addTransaction' } });
       }
     },
     [dispatch],
   );
 
-  const removeExpense = useCallback(
+  const removeTransaction = useCallback(
     async (id: string) => {
-      Sentry.addBreadcrumb({
-        category: 'action',
-        message: 'Removing expense',
-        data: { id },
-        level: 'info',
-      });
       try {
-        await BudgetService.removeExpense(id);
-        dispatch({ type: 'REMOVE_EXPENSE', payload: id });
+        await BudgetService.removeTransaction(id);
+        dispatch({ type: 'REMOVE_TRANSACTION', payload: id });
       } catch (e) {
-        console.error('Failed to delete expense', e);
-        Sentry.captureException(e, { tags: { context: 'removeExpense' } });
+        console.error('Failed to delete transaction', e);
+        Sentry.captureException(e, { tags: { context: 'removeTransaction' } });
       }
     },
     [dispatch],
   );
 
-  const addFixedExpense = useCallback(
-    async (name: string, amount: number) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      Sentry.addBreadcrumb({
-        category: 'action',
-        message: 'Adding fixed expense',
-        data: { name, amount },
-        level: 'info',
-      });
-
-      try {
-        const newExpense = await BudgetService.addFixedExpense(user.id, {
-          name,
-          amount,
-        });
-        dispatch({
-          type: 'ADD_FIXED_EXPENSE',
-          payload: { expense: newExpense },
-        });
-      } catch (e) {
-        console.error('Failed to add fixed expense', e);
-        Sentry.captureException(e, { tags: { context: 'addFixedExpense' } });
-      }
-    },
-    [dispatch],
-  );
-
-  const removeFixedExpense = useCallback(
-    async (id: string) => {
-      Sentry.addBreadcrumb({
-        category: 'action',
-        message: 'Removing fixed expense',
-        data: { id },
-        level: 'info',
-      });
-      try {
-        await BudgetService.removeFixedExpense(id);
-        dispatch({
-          type: 'REMOVE_FIXED_EXPENSE',
-          payload: { id },
-        });
-      } catch (e) {
-        console.error('Failed to remove fixed expense', e);
-        Sentry.captureException(e, { tags: { context: 'removeFixedExpense' } });
-      }
+  const setActiveBatch = useCallback(
+    (id: string) => {
+      dispatch({ type: 'SET_ACTIVE_BATCH', payload: id });
     },
     [dispatch],
   );
@@ -156,11 +113,12 @@ export const useBudgetActions = (
   }, [dispatch]);
 
   return {
-    setConfig,
-    addExpense,
-    removeExpense,
-    addFixedExpense,
-    removeFixedExpense,
+    addBatch,
+    updateBatch,
+    removeBatch,
+    addTransaction,
+    removeTransaction,
+    setActiveBatch,
     resetData,
   };
 };

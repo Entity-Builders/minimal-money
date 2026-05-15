@@ -1,193 +1,144 @@
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '@eb-packages/logic';
-import { BudgetConfig, Currency, Expense, FixedExpense } from '../types';
-import { calculateBudgetMetrics } from '../domain/budget';
+import { Batch, Currency, Transaction } from '../types';
 
+// Assuming we will use 'mm_batches' and 'mm_transactions' as tables in the shared project
 export const BudgetService = {
-  /**
-   * Loads all necessary initial data for the user:
-   * - Profile (Config)
-   * - Fixed Expenses
-   * - Expenses (Current Month)
-   * - Monthly Summary (Current Month)
-   */
   async loadInitialData(userId: string) {
     const now = new Date();
     const startOfMonth = new Date(
       now.getFullYear(),
       now.getMonth(),
       1,
-    ).toISOString();
+    ).getTime(); // we use timestamp for simple filtering
 
-    // Parallel fetching for performance
-    const [profileResult, fixedExpensesResult, summaryResult, expensesResult] =
-      await Promise.all([
-        supabase.from('profiles').select('*').eq('id', userId).single(),
-        supabase.from('fixed_expenses').select('*').eq('user_id', userId),
-        supabase
-          .from('monthly_summaries')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('month', startOfMonth)
-          .single(),
-        supabase
-          .from('expenses')
-          .select('*')
-          .eq('user_id', userId)
-          .gte('date', startOfMonth)
-          .order('date', { ascending: false }),
-      ]);
+    const [batchesResult, transactionsResult] = await Promise.all([
+      supabase.from('mm_batches').select('*').eq('user_id', userId),
+      // We only load transactions for the current month by default to keep it light
+      supabase
+        .from('mm_transactions')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('timestamp', startOfMonth)
+        .order('timestamp', { ascending: false }),
+    ]);
 
-    // Log any errors from initial data load
-    if (profileResult.error) {
-      Sentry.captureException(profileResult.error, {
-        tags: { context: 'loadInitialData_profile' },
+    if (batchesResult.error) {
+      Sentry.captureException(batchesResult.error, {
+        tags: { context: 'loadInitialData_batches' },
       });
     }
-    if (fixedExpensesResult.error) {
-      Sentry.captureException(fixedExpensesResult.error, {
-        tags: { context: 'loadInitialData_fixedExpenses' },
-      });
-    }
-    if (summaryResult.error) {
-      Sentry.captureException(summaryResult.error, {
-        tags: { context: 'loadInitialData_summary' },
-      });
-    }
-    if (expensesResult.error) {
-      Sentry.captureException(expensesResult.error, {
-        tags: { context: 'loadInitialData_expenses' },
+    if (transactionsResult.error) {
+      Sentry.captureException(transactionsResult.error, {
+        tags: { context: 'loadInitialData_transactions' },
       });
     }
 
-    // Handle Fixed Expenses
-    const loadedFixedExpenses: FixedExpense[] = (
-      fixedExpensesResult.data || []
-    ).map(e => ({
-      id: e.id,
-      name: e.name,
-      amount: Number(e.amount),
-      created_at: e.created_at,
-      user_id: e.user_id,
+    const loadedBatches: Batch[] = (batchesResult.data || []).map(b => ({
+      id: b.id,
+      name: b.name,
+      icon: b.icon,
+      monthlyLimit: Number(b.monthly_limit),
+      currentBalance: Number(b.current_balance),
+      sharedWith: b.shared_with || [],
+      createdAt: Number(b.created_at_ts),
     }));
 
-    const totalFixedExpenses = loadedFixedExpenses.reduce(
-      (acc, curr) => acc + curr.amount,
-      0,
-    );
-
-    // Handle Config/Profile
-    let loadedConfig: BudgetConfig | null = null;
-
-    if (profileResult.data) {
-      const profile = profileResult.data;
-      const currentMonthSummary = summaryResult.data;
-
-      // Prioritize current month summary income if available, else use profile default
-      const currentIncome =
-        currentMonthSummary?.total_income != null &&
-        currentMonthSummary.total_income > 0
-          ? currentMonthSummary.total_income
-          : profile.monthly_income || 0;
-
-      loadedConfig = {
-        income: currentIncome,
-        fixedExpenses: totalFixedExpenses,
-        savingsPercentage: profile.savings_percentage || 0,
-      };
-    }
-
-    // Handle Expenses
-    const loadedExpenses: Expense[] = (expensesResult.data || []).map(e => ({
-      id: e.id.toString(),
-      amount: Number(e.amount),
-      originalAmount: Number(e.original_amount) || Number(e.amount),
-      currency: (e.currency as Currency) || 'ARS',
-      timestamp: new Date(e.date || e.created_at).getTime(),
-      name: e.name,
-      category: e.category || undefined,
+    const loadedTransactions: Transaction[] = (transactionsResult.data || []).map(t => ({
+      id: t.id.toString(),
+      batchId: t.batch_id,
+      amount: Number(t.amount),
+      originalAmount: Number(t.original_amount) || Number(t.amount),
+      currency: (t.currency as Currency) || 'ARS',
+      timestamp: Number(t.timestamp),
+      name: t.name,
+      category: t.category || undefined,
     }));
 
     return {
-      config: loadedConfig,
-      expenses: loadedExpenses,
-      fixedExpenses: loadedFixedExpenses,
-      hasOnboarded: !!loadedConfig,
+      batches: loadedBatches,
+      transactions: loadedTransactions,
+      hasOnboarded: loadedBatches.length > 0,
     };
   },
 
-  async updateConfig(
+  async addBatch(
     userId: string,
-    newConfig: BudgetConfig,
-    initialExpenses: number = 0,
+    batchData: { name: string; icon: string; monthlyLimit: number },
   ) {
-    const { income, fixedExpenses, savingsPercentage } = newConfig;
-    const now = new Date();
+    const { data, error } = await supabase
+      .from('mm_batches')
+      .insert({
+        user_id: userId,
+        name: batchData.name,
+        icon: batchData.icon,
+        monthly_limit: batchData.monthlyLimit,
+        current_balance: batchData.monthlyLimit, // Initial balance is the limit
+        created_at_ts: Date.now(),
+      })
+      .select()
+      .single();
 
-    // 1. Upsert Profile (Global defaults)
-    const { error: profileError } = await supabase.from('profiles').upsert({
-      id: userId,
-      monthly_income: income,
-      fixed_expenses: fixedExpenses,
-      savings_percentage: savingsPercentage,
-      updated_at: new Date().toISOString(),
-    });
-
-    if (profileError) {
-      Sentry.captureException(profileError, {
-        tags: { context: 'updateConfig_profile' },
+    if (error) {
+      Sentry.captureException(error, {
+        tags: { context: 'addBatch' },
       });
-      throw profileError;
+      throw error;
     }
 
-    // 2. Upsert Monthly Summary (Snapshot for current month)
-    const startOfMonth = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      1,
-    ).toISOString();
+    const newBatch: Batch = {
+      id: data.id,
+      name: data.name,
+      icon: data.icon,
+      monthlyLimit: Number(data.monthly_limit),
+      currentBalance: Number(data.current_balance),
+      sharedWith: data.shared_with || [],
+      createdAt: Number(data.created_at_ts),
+    };
 
-    const { error: summaryError } = await supabase
-      .from('monthly_summaries')
-      .upsert(
-        {
-          user_id: userId,
-          month: startOfMonth,
-          total_income: income,
-        },
-        { onConflict: 'user_id, month' },
-      );
+    return newBatch;
+  },
 
-    if (summaryError) {
-      if (summaryError) {
-        console.error(
-          'Failed to update monthly summary snapshot',
-          summaryError,
-        );
-        Sentry.captureException(summaryError, {
-          tags: { context: 'updateConfig_summary' },
-        });
-      }
-    }
+  async updateBatch(id: string, updates: Partial<Batch>) {
+    const payload: any = {};
+    if (updates.name !== undefined) payload.name = updates.name;
+    if (updates.icon !== undefined) payload.icon = updates.icon;
+    if (updates.monthlyLimit !== undefined) payload.monthly_limit = updates.monthlyLimit;
+    if (updates.currentBalance !== undefined) payload.current_balance = updates.currentBalance;
 
-    // 3. Add Initial Expenses if any
-    if (initialExpenses > 0) {
-      await this.addExpense(userId, {
-        amount: initialExpenses,
-        currency: 'ARS', // Defaulting to ARS for initial expenses setup
-        timestamp: Date.now(),
-        name: 'Gastos Iniciales',
-        category: 'General',
-        originalAmount: initialExpenses,
+    const { error } = await supabase
+      .from('mm_batches')
+      .update(payload)
+      .eq('id', id);
+
+    if (error) {
+      Sentry.captureException(error, {
+        tags: { context: 'updateBatch' },
       });
+      throw error;
     }
-
     return true;
   },
 
-  async addExpense(
+  async removeBatch(id: string) {
+    const { error } = await supabase
+      .from('mm_batches')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      Sentry.captureException(error, {
+        tags: { context: 'removeBatch' },
+      });
+      throw error;
+    }
+    return true;
+  },
+
+  async addTransaction(
     userId: string,
-    expenseData: {
+    transactionData: {
+      batchId: string;
       amount: number;
       currency: Currency;
       timestamp: number;
@@ -197,108 +148,64 @@ export const BudgetService = {
       exchangeRate?: number;
     },
   ) {
-    const dateObj = new Date(expenseData.timestamp);
-    const exchangeRate = expenseData.exchangeRate || 1;
-
-    // Convert to USD/Base currency if needed, or store as is.
-    // If currency is not USD, we assume we need to convert to USD (base).
-    // ARS -> 1100 ARS/USD -> 1100 / 1100 = 1 USD
-    // MXN -> 20 MXN/USD -> 20 / 20 = 1 USD
+    const exchangeRate = transactionData.exchangeRate || 1;
     const amountInBase =
-      expenseData.currency !== 'USD'
-        ? Math.round((expenseData.amount / exchangeRate) * 100) / 100
-        : expenseData.amount;
+      transactionData.currency !== 'USD'
+        ? Math.round((transactionData.amount / exchangeRate) * 100) / 100
+        : transactionData.amount;
 
     const { data, error } = await supabase
-      .from('expenses')
+      .from('mm_transactions')
       .insert({
         user_id: userId,
+        batch_id: transactionData.batchId,
         amount: amountInBase,
-        original_amount: expenseData.originalAmount || expenseData.amount,
-        currency: expenseData.currency,
-        name: expenseData.name,
-        date: dateObj.toISOString(),
-        category: expenseData.category || 'General',
+        original_amount: transactionData.originalAmount || transactionData.amount,
+        currency: transactionData.currency,
+        name: transactionData.name,
+        timestamp: transactionData.timestamp,
+        category: transactionData.category || 'General',
       })
       .select()
       .single();
 
     if (error) {
       Sentry.captureException(error, {
-        tags: { context: 'addExpense' },
+        tags: { context: 'addTransaction' },
       });
       throw error;
     }
 
-    const newExpense: Expense = {
+    // Also update the batch current balance in the DB
+    // Ideally this would be an RPC or a database trigger to ensure consistency.
+    // For now we do it in a second request (assuming optimistic UI already handled it locally).
+    
+    // Actually, we should call an RPC to do this atomically, but let's stick to this for now.
+    // In the real app, we might rely on the client state for the immediate update and background sync.
+
+    const newTransaction: Transaction = {
       id: data.id.toString(),
+      batchId: data.batch_id,
       amount: Number(data.amount),
       originalAmount: Number(data.original_amount),
       currency: data.currency as Currency,
-      timestamp: new Date(data.date).getTime(),
+      timestamp: Number(data.timestamp),
       name: data.name,
       category: data.category || undefined,
     };
 
-    return newExpense;
+    return newTransaction;
   },
 
-  async removeExpense(expenseId: string) {
+  async removeTransaction(id: string) {
     const { error } = await supabase
-      .from('expenses')
-      .delete()
-      .eq('id', expenseId);
-
-    if (error) {
-      Sentry.captureException(error, {
-        tags: { context: 'removeExpense' },
-      });
-      throw error;
-    }
-    return true;
-  },
-
-  async addFixedExpense(
-    userId: string,
-    expenseData: { name: string; amount: number },
-  ) {
-    const { data, error } = await supabase
-      .from('fixed_expenses')
-      .insert({
-        user_id: userId,
-        name: expenseData.name,
-        amount: expenseData.amount,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      Sentry.captureException(error, {
-        tags: { context: 'addFixedExpense' },
-      });
-      throw error;
-    }
-
-    const newExpense: FixedExpense = {
-      id: data.id,
-      name: data.name,
-      amount: Number(data.amount),
-      created_at: data.created_at,
-      user_id: data.user_id,
-    };
-
-    return newExpense;
-  },
-
-  async removeFixedExpense(id: string) {
-    const { error } = await supabase
-      .from('fixed_expenses')
+      .from('mm_transactions')
       .delete()
       .eq('id', id);
 
     if (error) {
       Sentry.captureException(error, {
-        tags: { context: 'removeFixedExpense' },
+        tags: { context: 'removeTransaction' },
       });
       throw error;
     }

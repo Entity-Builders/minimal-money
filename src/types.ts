@@ -1,8 +1,8 @@
 import { User } from '@supabase/supabase-js';
 
 export type RootStackParamList = {
-  Auth: undefined; // The Stack
-  Login: undefined; // The Screen inside Auth Stack (renamed to avoid conflict)
+  Auth: undefined;
+  Login: undefined;
   Onboarding: undefined;
   Main: undefined;
   Settings: undefined;
@@ -12,88 +12,56 @@ export type RootStackParamList = {
 
 export type Currency = 'ARS' | 'USD' | 'MXN';
 
-export interface FixedExpense {
-  id: string; // uuid
-  name: string;
-  amount: number;
-  created_at?: string;
-  user_id?: string;
-}
-
-export interface BudgetConfig {
-  income: number;
-  fixedExpenses: number;
-  fixedExpensesDetails?: FixedExpense[];
-  savingsPercentage: number; // 0 to 50
-  recoveryTargetDays?: number; // user preference for recovery speed
-}
-
-export interface Expense {
+export interface Transaction {
   id: string;
-  amount: number; // siempre guardado en ARS
-  originalAmount: number; // monto original ingresado
-  currency: Currency; // moneda original
+  batchId: string;
+  amount: number; // Stored in the base currency (e.g. ARS)
+  originalAmount: number;
+  currency: Currency;
   timestamp: number;
   name: string;
   category?: string;
 }
 
-export interface Transaction {
+export interface Batch {
   id: string;
-  amount: number;
-  currency: Currency;
-  timestamp: Date | number; // Support both for flexibility in mocks vs real
-  category?: string;
-  name?: string;
+  name: string;
+  icon: string;
+  monthlyLimit: number;
+  currentBalance: number;
+  sharedWith?: string[]; // user IDs or emails
+  createdAt: number;
 }
 
-export interface BudgetContextType {
+export interface BudgetState {
   user: User | null;
-  config: BudgetConfig | null;
-  expenses: Expense[];
-  // Fixed Expenses
-  fixedExpensesList: FixedExpense[];
-  addFixedExpense: (name: string, amount: number) => Promise<void>;
-  removeFixedExpense: (id: string) => Promise<void>;
-
-  // ... (rest implied, just adding loading)
-  loading: boolean;
-  expensesToday: Expense[];
-  spentToday: number;
-  spentCurrentMonth: number;
-  dailyBudget: number;
-  accumulatedSavings: number;
-  totalAvailable: number;
-  remainingDays: number;
-  daysInMonth: number;
-  projectedSavings: number;
-  monthlyFixedSavingsGoal: number;
+  batches: Batch[];
+  transactions: Transaction[];
   hasOnboarded: boolean;
-  isRecoveryMode: boolean;
-  totalDebt: number;
-  effectiveDailyBudget: number;
-  recoveryQuota: number;
-  daysToRecover: number;
-  calculateBudgetProjection: (
-    income: number,
-    fixedExpenses: number,
-    savingsPercentage: number,
-    additionalSpent?: number,
-  ) => {
-    disposableIncome: number;
-    savingsAmount: number;
-    monthlyVariableBudget: number;
-    dailySpendingPool: number;
-    calculatedDaily: number;
-  };
-  setConfig: (config: BudgetConfig, initialExpenses?: number) => Promise<void>;
-  addExpense: (
+  loading: boolean;
+  activeBatchId: string | null;
+}
+
+export interface BudgetContextType extends BudgetState {
+  // Actions
+  addBatch: (name: string, icon: string, monthlyLimit: number) => Promise<void>;
+  updateBatch: (id: string, updates: Partial<Batch>) => Promise<void>;
+  removeBatch: (id: string) => Promise<void>;
+  
+  addTransaction: (
+    batchId: string,
     amount: number,
     currency: Currency,
     exchangeRate: number,
-    customTimestamp?: number,
     name?: string,
+    customTimestamp?: number
   ) => Promise<void>;
-  removeExpense: (id: string) => Promise<void>;
+  removeTransaction: (id: string) => Promise<void>;
+  
+  setActiveBatch: (id: string) => void;
   resetData: () => Promise<void>;
+  
+  // Derived state / Getters
+  activeBatch: Batch | null;
+  activeBatchTransactions: Transaction[];
 }

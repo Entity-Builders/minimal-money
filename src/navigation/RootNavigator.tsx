@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useBudget } from '../context/useBudget';
 import { AuthStack } from './AuthStack';
 import { AppStack } from './AppStack';
-import OnboardingScreen from '../screens/OnboardingScreen';
+import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { RootStackParamList } from '../types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
