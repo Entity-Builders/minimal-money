@@ -373,7 +373,7 @@ export default function MainScreen() {
                   onPreviousBatch={handlePreviousBatch}
                   onNextBatch={handleNextBatch}
                   batchId={item.id}
-                  activeBatchId={activeBatchId}
+                  activeBatchId={activeBatchId ?? ''}
                 />
               </View>
             </KeyboardAvoidingView>

@@ -1,6 +1,6 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider } from 'react-native-paper';
 import { MinimalTheme } from './src/theme';
 import { BudgetProvider } from './src/context/useBudget';
+import { SplashContext } from './src/context/SplashContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 
 import * as Sentry from '@sentry/react-native';
@@ -29,6 +30,7 @@ Sentry.init({
 });
 
 function App() {
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
   useEffect(() => {
     Sentry.addBreadcrumb({
       category: 'app',
@@ -49,12 +51,14 @@ function App() {
     const hideSplashScreen = async () => {
       await new Promise(resolve => setTimeout(resolve, 3000));
       await SplashScreen.hideAsync();
+      setIsSplashVisible(false);
     };
 
     hideSplashScreen();
   }, []);
 
   return (
+    <SplashContext.Provider value={{ isSplashVisible }}>
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <PaperProvider theme={MinimalTheme}>
@@ -69,6 +73,7 @@ function App() {
         </PaperProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+    </SplashContext.Provider>
   );
 }
 
