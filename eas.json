@@ -36,7 +36,8 @@
       "autoIncrement": true,
       "channel": "preview",
       "env": {
-        "USE_BASE_BUNDLE_ID": "true"
+        "USE_BASE_BUNDLE_ID": "true",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
       "extends": "preview"
     },
@@ -48,7 +49,8 @@
       "env": {
         "APP_ENV": "production",
         "SENTRY_ORG": "obrach",
-        "SENTRY_PROJECT": "minimal-money"
+        "SENTRY_PROJECT": "minimal-money",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
   },
