@@ -6,33 +6,34 @@ interface ContinueButtonProps {
   onPress: () => void;
   onPrevious?: () => void;
   onNext?: () => void;
+  bgColor?: string;
 }
 
-export const ContinueButton = ({ onPress, onPrevious, onNext }: ContinueButtonProps) => {
+export const ContinueButton = ({ onPress, onPrevious, onNext, bgColor = '#1C1C1E' }: ContinueButtonProps) => {
   return (
     <View
       style={{
-        backgroundColor: '#1C1C1E',
+        backgroundColor: bgColor,
         paddingHorizontal: 16,
         paddingVertical: 10,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         borderTopWidth: 1,
-        borderTopColor: '#2C2C2E',
+        borderTopColor: 'rgba(255, 255, 255, 0.1)',
       }}
     >
       { (onPrevious || onNext) ? (
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <TouchableOpacity 
             onPress={onPrevious}
-            style={{ padding: 8, backgroundColor: '#2C2C2E', borderRadius: 8, width: 44, alignItems: 'center' }}
+            style={{ padding: 8, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 8, width: 44, alignItems: 'center' }}
           >
             <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
           </TouchableOpacity>
           <TouchableOpacity 
             onPress={onNext}
-            style={{ padding: 8, backgroundColor: '#2C2C2E', borderRadius: 8, width: 44, alignItems: 'center' }}
+            style={{ padding: 8, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 8, width: 44, alignItems: 'center' }}
           >
             <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
           </TouchableOpacity>
@@ -44,7 +45,7 @@ export const ContinueButton = ({ onPress, onPrevious, onNext }: ContinueButtonPr
       <TouchableOpacity
         onPress={onPress}
         style={{
-          backgroundColor: '#30D158',
+          backgroundColor: 'rgba(255, 255, 255, 0.15)',
           paddingHorizontal: 24,
           paddingVertical: 10,
           borderRadius: 22,

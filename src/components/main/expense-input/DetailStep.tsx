@@ -17,6 +17,7 @@ import { styles } from '../../../screens/MainScreenStyles';
 import { useFocusGlow } from '../../../hooks/useFocusGlow';
 import { ContinueButton } from './ContinueButton';
 import { SkipButton } from './SkipButton';
+import { getColorForBatch } from '../../../utils/colors';
 
 interface DetailStepProps {
   amount: string;
@@ -140,6 +141,7 @@ export const DetailStep = ({
             onPress={handleExpenseSubmit}
             onPrevious={onPreviousBatch}
             onNext={onNextBatch}
+            bgColor={getColorForBatch(batchId)}
           />
         </InputAccessoryView>
       )}

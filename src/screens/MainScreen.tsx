@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import BottomSheet from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -35,6 +35,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, Batch } from '../types';
 import { JoinResult } from '@eb-packages/logic';
+import { getColorForBatch } from '../utils/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -80,6 +81,31 @@ export default function MainScreen() {
   const [showJoin, setShowJoin] = useState(false);
   // memberCount per batch — loaded lazily from DB
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
+
+  const shareSheetRef = useRef<BottomSheetModal>(null);
+  const joinSheetRef = useRef<BottomSheetModal>(null);
+
+  useEffect(() => {
+    if (shareTarget) shareSheetRef.current?.present();
+    else shareSheetRef.current?.dismiss();
+  }, [shareTarget]);
+
+  useEffect(() => {
+    if (showJoin) joinSheetRef.current?.present();
+    else joinSheetRef.current?.dismiss();
+  }, [showJoin]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.6}
+      />
+    ),
+    []
+  );
 
   const insets = useSafeAreaInsets();
 
@@ -142,23 +168,6 @@ export default function MainScreen() {
   }, [batches, setActiveBatchId]);
 
   const activeBatch = batches.find((b) => b.id === activeBatchId) ?? null;
-
-  const getColorForBatch = (id: string) => {
-    const colors = [
-      '#1A1A24', // Deep Navy
-      '#1E1A1D', // Dark Plum
-      '#1A241E', // Forest Dark
-      '#241A1A', // Deep Red
-      '#1A2024', // Dark Slate
-      '#22201A', // Dark Gold
-      '#1C1C1E', // Almost Black
-    ];
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = id.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-  };
 
   const handleJoined = useCallback((result: JoinResult) => {
     setShowJoin(false);
@@ -334,67 +343,44 @@ export default function MainScreen() {
       </Animated.View>
 
       {/* ── Share Batch Modal ───────────────────────────── */}
-      <Modal
-        visible={!!shareTarget}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShareTarget(null)}
+      <BottomSheetModal
+        ref={shareSheetRef}
+        enableDynamicSizing={true}
+        backdropComponent={renderBackdrop}
+        onDismiss={() => setShareTarget(null)}
+        backgroundStyle={{ backgroundColor: '#1C1C1E' }}
+        handleIndicatorStyle={{ backgroundColor: '#444' }}
       >
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
-          onPress={() => setShareTarget(null)}
-        >
-          <Pressable
-            style={{
-              backgroundColor: '#1C1C1E',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              paddingBottom: insets.bottom + 8,
-            }}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#444', alignSelf: 'center', marginTop: 12, marginBottom: 4 }} />
-            {shareTarget && (
-              <ShareBudgetSheet
-                batchId={shareTarget.id}
-                batchName={shareTarget.name}
-                batchIcon={shareTarget.icon}
-                memberCount={memberCounts[shareTarget.id] ?? 1}
-                onClose={() => setShareTarget(null)}
-              />
-            )}
-          </Pressable>
-        </Pressable>
-      </Modal>
+        <BottomSheetView style={{ paddingBottom: insets.bottom + 8 }}>
+          {shareTarget && (
+            <ShareBudgetSheet
+              batchId={shareTarget.id}
+              batchName={shareTarget.name}
+              batchIcon={shareTarget.icon}
+              memberCount={memberCounts[shareTarget.id] ?? 1}
+              onClose={() => setShareTarget(null)}
+            />
+          )}
+        </BottomSheetView>
+      </BottomSheetModal>
 
       {/* ── Join Batch Modal ────────────────────────────── */}
-      <Modal
-        visible={showJoin}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowJoin(false)}
+      <BottomSheetModal
+        ref={joinSheetRef}
+        enableDynamicSizing={true}
+        backdropComponent={renderBackdrop}
+        onDismiss={() => setShowJoin(false)}
+        backgroundStyle={{ backgroundColor: '#1C1C1E' }}
+        handleIndicatorStyle={{ backgroundColor: '#444' }}
+        keyboardBehavior="extend"
       >
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
-          onPress={() => setShowJoin(false)}
-        >
-          <Pressable
-            style={{
-              backgroundColor: '#1C1C1E',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              paddingBottom: insets.bottom + 8,
-            }}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#444', alignSelf: 'center', marginTop: 12, marginBottom: 4 }} />
-            <JoinBudgetSheet
-              onJoined={handleJoined}
-              onClose={() => setShowJoin(false)}
-            />
-          </Pressable>
-        </Pressable>
-      </Modal>
+        <BottomSheetView style={{ paddingBottom: insets.bottom + 8 }}>
+          <JoinBudgetSheet
+            onJoined={handleJoined}
+            onClose={() => setShowJoin(false)}
+          />
+        </BottomSheetView>
+      </BottomSheetModal>
     </View>
   );
 }

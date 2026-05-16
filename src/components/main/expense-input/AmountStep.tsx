@@ -17,6 +17,7 @@ import { Currency } from '../../../types';
 import { useFocusGlow } from '../../../hooks/useFocusGlow';
 import { LiquidGlass } from '../../LiquidGlass';
 import { ContinueButton } from './ContinueButton';
+import { getColorForBatch } from '../../../utils/colors';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -162,6 +163,7 @@ export const AmountStep = ({
             onPress={handleNextStep} 
             onPrevious={onPreviousBatch}
             onNext={onNextBatch}
+            bgColor={getColorForBatch(batchId)}
           />
         </InputAccessoryView>
       )}
