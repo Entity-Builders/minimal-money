@@ -1,8 +1,6 @@
 import React from 'react';
-import Rive, { Alignment, AutoBind, Fit, RiveRef } from 'rive-react-native';
-import { View, StyleSheet, ViewStyle, Image } from 'react-native';
+import { View, StyleSheet, ViewStyle, Image, Platform, Text } from 'react-native';
 
-// const ASSET_NAME = 'number_reflection_with_data_binding';
 const riveSource = require('../../assets/number_reflection_with_data_binding.riv');
 const riveUri = Image.resolveAssetSource(riveSource).uri;
 
@@ -11,11 +9,20 @@ interface RiveReflectionProps {
   style?: ViewStyle;
 }
 
-export const RiveReflection: React.FC<RiveReflectionProps> = ({
-  value,
-  style,
-}) => {
-  const riveRef = React.useRef<RiveRef>(null);
+const WebRiveReflection: React.FC<RiveReflectionProps> = ({ value, style }) => {
+  return (
+    <View style={[styles.container, style, styles.webFallback]}>
+      <Text style={styles.webFallbackText}>
+        ${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+      </Text>
+    </View>
+  );
+};
+
+const NativeRiveReflection: React.FC<RiveReflectionProps> = ({ value, style }) => {
+  // Require dynamically to prevent web bundler from evaluating native-only code
+  const { default: Rive, Fit, AutoBind } = require('rive-react-native');
+  const riveRef = React.useRef<any>(null);
 
   const applyValue = React.useCallback((v: number) => {
     riveRef.current?.setNumber('Number property', v);
@@ -52,10 +59,27 @@ export const RiveReflection: React.FC<RiveReflectionProps> = ({
   );
 };
 
+export const RiveReflection: React.FC<RiveReflectionProps> = (props) => {
+  if (Platform.OS === 'web') {
+    return <WebRiveReflection {...props} />;
+  }
+  return <NativeRiveReflection {...props} />;
+};
+
 const styles = StyleSheet.create({
   container: {
     height: 170,
     width: '100%',
   },
   rive: {},
+  webFallback: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  webFallbackText: {
+    fontSize: 64,
+    fontWeight: 'bold',
+    color: '#fff',
+    opacity: 0.8,
+  },
 });
