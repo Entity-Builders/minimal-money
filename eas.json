@@ -20,9 +20,11 @@
     },
     "preview": {
       "extends": "base",
-      "distribution": "internal",
+      "distribution": "store",
+      "autoIncrement": true,
       "channel": "preview",
       "env": {
+        "USE_BASE_BUNDLE_ID": "true",
         "EXPO_PUBLIC_APP_ENV": "preview",
         "EXPO_PUBLIC_SUPABASE_SCHEMA": "minimal_money",
         "SENTRY_ORG": "obrach",
@@ -31,16 +33,6 @@
         "EXPO_PUBLIC_API_URL": "https://preview-api.minimalmoney.com",
         "EXPO_PUBLIC_SENTRY_DSN": "https://bb045b86910322a8033d4a228aa1c238@o1031007.ingest.us.sentry.io/4510501735628800"
       }
-    },
-    "preview-testflight": {
-      "distribution": "store",
-      "autoIncrement": true,
-      "channel": "preview",
-      "env": {
-        "USE_BASE_BUNDLE_ID": "true",
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
-      },
-      "extends": "preview"
     },
     "production": {
       "extends": "base",
@@ -60,7 +52,7 @@
   },
   "submit": {
     "production": {},
-    "preview-testflight": {
+    "preview": {
       "ios": {
         "appleId": "juanobrach@gmail.com",
         "ascAppId": "6756376303",
