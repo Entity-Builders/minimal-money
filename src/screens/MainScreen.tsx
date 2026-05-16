@@ -11,6 +11,7 @@ import {
   Pressable,
   Modal,
   ScrollView,
+  InputAccessoryView,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +30,8 @@ import { useMainScreen } from '../hooks/useMainScreen';
 import { useOTAUpdate } from '../hooks/useOTAUpdate';
 import { styles } from './MainScreenStyles';
 import { ExpenseInput } from '../components/main/expense-input';
+import { ContinueButton } from '../components/main/expense-input/ContinueButton';
+import { SkipButton } from '../components/main/expense-input/SkipButton';
 import { BudgetFocusDisplay } from '../components/main/BudgetFocusDisplay';
 
 import { useNavigation } from '@react-navigation/native';
@@ -290,10 +293,7 @@ export default function MainScreen() {
                 <ExpenseInput
                   amount={amount}
                   handleAmountChange={handleAmountChange}
-                  handleExpenseSubmit={() => {
-                    handleExpenseSubmit();
-                    Keyboard.dismiss();
-                  }}
+                  handleExpenseSubmit={handleExpenseSubmit}
                   currency={currency}
                   handleCurrencyToggle={handleCurrencyToggle}
                   exchangeRate={getRate(currency)}
@@ -307,6 +307,7 @@ export default function MainScreen() {
                   onPreviousBatch={handlePreviousBatch}
                   onNextBatch={handleNextBatch}
                   batchId={item.id}
+                  activeBatchId={activeBatchId}
                 />
               </View>
             </KeyboardAvoidingView>
@@ -331,6 +332,7 @@ export default function MainScreen() {
         viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
+        extraData={activeBatchId}
       />
 
       <Animated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }, animatedStyle]} pointerEvents={isInputFocused ? 'none' : 'box-none'}>

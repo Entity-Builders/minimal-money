@@ -34,6 +34,7 @@ interface AmountStepProps {
   onPreviousBatch?: () => void;
   onNextBatch?: () => void;
   batchId: string;
+  activeBatchId: string;
 }
 
 export const AmountStep = ({
@@ -49,6 +50,7 @@ export const AmountStep = ({
   onPreviousBatch,
   onNextBatch,
   batchId,
+  activeBatchId,
 }: AmountStepProps) => {
   const inputRef = React.useRef<TextInput>(null);
 
@@ -163,7 +165,7 @@ export const AmountStep = ({
             onPress={handleNextStep} 
             onPrevious={onPreviousBatch}
             onNext={onNextBatch}
-            bgColor={getColorForBatch(batchId)}
+            bgColor={getColorForBatch(activeBatchId)}
           />
         </InputAccessoryView>
       )}

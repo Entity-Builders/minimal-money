@@ -8,9 +8,9 @@ import {
   View,
   TextInput,
   ActivityIndicator,
-  Modal,
   Pressable,
 } from 'react-native';
+import BottomSheet, { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettingsScreen } from '../hooks/useSettingsScreen';
 import { styles } from './SettingsScreenStyles';
@@ -36,6 +36,31 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const [showJoin, setShowJoin] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+
+  const joinSheetRef = React.useRef<BottomSheetModal>(null);
+  const createSheetRef = React.useRef<BottomSheetModal>(null);
+
+  React.useEffect(() => {
+    if (showJoin) joinSheetRef.current?.present();
+    else joinSheetRef.current?.dismiss();
+  }, [showJoin]);
+
+  React.useEffect(() => {
+    if (showCreate) createSheetRef.current?.present();
+    else createSheetRef.current?.dismiss();
+  }, [showCreate]);
+
+  const renderBackdrop = React.useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.6}
+      />
+    ),
+    []
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -123,72 +148,40 @@ export default function SettingsScreen() {
       </View>
 
       {/* ── Join Modal ───────────────────────────────────── */}
-      <Modal
-        visible={showJoin}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowJoin(false)}
+      <BottomSheetModal
+        ref={joinSheetRef}
+        enableDynamicSizing={true}
+        backdropComponent={renderBackdrop}
+        onDismiss={() => setShowJoin(false)}
+        backgroundStyle={{ backgroundColor: '#1C1C1E' }}
+        handleIndicatorStyle={{ backgroundColor: '#444' }}
+        keyboardBehavior="extend"
       >
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-          style={{ flex: 1 }}
-        >
-          <Pressable
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
-            onPress={() => setShowJoin(false)}
-          >
-            <Pressable
-            style={{
-              backgroundColor: '#1C1C1E',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              paddingBottom: insets.bottom + 8,
-            }}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#444', alignSelf: 'center', marginTop: 12, marginBottom: 4 }} />
-            <JoinBudgetSheet
-              onJoined={() => setShowJoin(false)}
-              onClose={() => setShowJoin(false)}
-            />
-            </Pressable>
-          </Pressable>
-        </KeyboardAvoidingView>
-      </Modal>
+        <BottomSheetView style={{ paddingBottom: insets.bottom + 8 }}>
+          <JoinBudgetSheet
+            onJoined={() => setShowJoin(false)}
+            onClose={() => setShowJoin(false)}
+          />
+        </BottomSheetView>
+      </BottomSheetModal>
 
       {/* ── Create Modal ───────────────────────────────────── */}
-      <Modal
-        visible={showCreate}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowCreate(false)}
+      <BottomSheetModal
+        ref={createSheetRef}
+        enableDynamicSizing={true}
+        backdropComponent={renderBackdrop}
+        onDismiss={() => setShowCreate(false)}
+        backgroundStyle={{ backgroundColor: '#1C1C1E' }}
+        handleIndicatorStyle={{ backgroundColor: '#444' }}
+        keyboardBehavior="extend"
       >
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-          style={{ flex: 1 }}
-        >
-          <Pressable
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
-            onPress={() => setShowCreate(false)}
-          >
-            <Pressable
-            style={{
-              backgroundColor: '#1C1C1E',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              paddingBottom: insets.bottom + 8,
-            }}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#444', alignSelf: 'center', marginTop: 12, marginBottom: 4 }} />
-            <CreateBudgetSheet
-              onCreated={() => setShowCreate(false)}
-              onClose={() => setShowCreate(false)}
-            />
-            </Pressable>
-          </Pressable>
-        </KeyboardAvoidingView>
-      </Modal>
+        <BottomSheetView style={{ paddingBottom: insets.bottom + 8 }}>
+          <CreateBudgetSheet
+            onCreated={() => setShowCreate(false)}
+            onClose={() => setShowCreate(false)}
+          />
+        </BottomSheetView>
+      </BottomSheetModal>
     </SafeAreaView>
   );
 }

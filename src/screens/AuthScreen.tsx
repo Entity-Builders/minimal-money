@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { supabase } from '@eb-packages/logic';
+import { supabase, supabaseUrl } from '@eb-packages/logic';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AuthScreen() {
@@ -57,7 +57,8 @@ export default function AuthScreen() {
       const errorDetails = [
         error.message,
         error.cause ? `Cause: ${error.cause}` : '',
-        `Env: ${process.env.APP_ENV}`,
+        `Env: ${process.env.EXPO_PUBLIC_APP_ENV}`,
+        `DB URL: ${supabaseUrl}`,
       ]
         .filter(Boolean)
         .join('\n');

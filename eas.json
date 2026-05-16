@@ -12,7 +12,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_ENV": "development",
+        "EXPO_PUBLIC_APP_ENV": "development",
         "SENTRY_ORG": "obrach",
         "SENTRY_PROJECT": "minimal-money"
       }
@@ -22,12 +22,10 @@
       "distribution": "internal",
       "channel": "preview",
       "env": {
-        "APP_ENV": "preview",
+        "EXPO_PUBLIC_APP_ENV": "preview",
         "SENTRY_ORG": "obrach",
         "SENTRY_PROJECT": "minimal-money",
         "EXPO_PUBLIC_API_URL": "https://preview-api.minimalmoney.com",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://nowcjsuglgkvnupfdtpf.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_bPPR7OtuPvIqGkTRypPxCw_txE4iXd1",
         "EXPO_PUBLIC_SENTRY_DSN": "https://bb045b86910322a8033d4a228aa1c238@o1031007.ingest.us.sentry.io/4510501735628800"
       }
     },
@@ -47,10 +45,12 @@
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "APP_ENV": "production",
+        "EXPO_PUBLIC_APP_ENV": "production",
         "SENTRY_ORG": "obrach",
         "SENTRY_PROJECT": "minimal-money",
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_API_URL": "https://api.minimalmoney.com",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://bb045b86910322a8033d4a228aa1c238@o1031007.ingest.us.sentry.io/4510501735628800"
       }
     }
   },

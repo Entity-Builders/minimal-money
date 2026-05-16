@@ -31,6 +31,7 @@ interface DetailStepProps {
   onPreviousBatch?: () => void;
   onNextBatch?: () => void;
   batchId: string;
+  activeBatchId: string;
 }
 
 export const DetailStep = ({
@@ -45,6 +46,7 @@ export const DetailStep = ({
   onPreviousBatch,
   onNextBatch,
   batchId,
+  activeBatchId,
 }: DetailStepProps) => {
   const {
     focusProgress: detailFocusProgress,
@@ -141,7 +143,7 @@ export const DetailStep = ({
             onPress={handleExpenseSubmit}
             onPrevious={onPreviousBatch}
             onNext={onNextBatch}
-            bgColor={getColorForBatch(batchId)}
+            bgColor={getColorForBatch(activeBatchId)}
           />
         </InputAccessoryView>
       )}
