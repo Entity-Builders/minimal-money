@@ -23,6 +23,7 @@
   "dependencies": {
     "@eb-packages/logic": "*",
     "@eb-packages/ui": "*",
+    "@expo/metro-runtime": "~6.1.2",
     "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/slider": "^5.1.1",
@@ -48,6 +49,7 @@
     "expo-status-bar": "~3.0.9",
     "expo-updates": "~29.0.15",
     "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-paper": "^5.14.5",
@@ -56,6 +58,7 @@
     "react-native-screens": "~4.16.0",
     "react-native-svg": "^15.15.1",
     "react-native-url-polyfill": "^1.1.1",
+    "react-native-web": "^0.21.0",
     "react-native-worklets": "^0.7.2",
     "rive-react-native": "^9.7.1"
   },
@@ -63,6 +66,8 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
+    "@types/react-dom": "^19",
+    "@types/react-native-web": "^0",
     "dotenv": "^17.2.3",
     "eslint": "^8",
     "eslint-config-expo": "^10.0.0",

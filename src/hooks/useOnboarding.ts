@@ -4,6 +4,7 @@ import { useBudget } from '../context/useBudget';
 export const useOnboarding = () => {
   const { addBatch } = useBudget();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState('Supermercado');
   const [icon, setIcon] = useState('🛒');
@@ -14,8 +15,13 @@ export const useOnboarding = () => {
     if (!name || limit <= 0) return;
 
     setLoading(true);
-    await addBatch(name, icon, limit);
+    setError(null);
+    const success = await addBatch(name, icon, limit);
     setLoading(false);
+    
+    if (success === false) {
+      setError('Ocurrió un error creando el budget. Por favor intente nuevamente.');
+    }
   };
 
   return {
@@ -26,6 +32,7 @@ export const useOnboarding = () => {
     monthlyLimit,
     setMonthlyLimit,
     loading,
+    error,
     finishOnboarding,
   };
 };

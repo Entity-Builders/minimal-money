@@ -9,6 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
   Pressable,
+  Alert,
 } from 'react-native';
 import BottomSheet, { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +19,8 @@ import { SettingsHeader } from '../components/settings/SettingsHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { JoinBudgetSheet } from '../components/sharing/JoinBudgetSheet';
 import { CreateBudgetSheet } from '../components/sharing/CreateBudgetSheet';
+import { generateInviteCode } from '@eb-packages/logic';
+import * as Clipboard from 'expo-clipboard';
 
 export default function SettingsScreen() {
   const {
@@ -62,6 +65,25 @@ export default function SettingsScreen() {
     []
   );
 
+  const handleShare = async (batch: any) => {
+    try {
+      const { code } = await generateInviteCode(batch.id);
+      Alert.alert(
+        'Código de Invitación',
+        `Comparte este código para que otros se unan a tu budget:\n\n${code}\n\n(Válido por 24 horas)`,
+        [
+          { text: 'Copiar', onPress: async () => {
+            await Clipboard.setStringAsync(code);
+            Alert.alert('Copiado', 'El código se ha copiado al portapapeles');
+          }},
+          { text: 'Cerrar', style: 'cancel' }
+        ]
+      );
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'No se pudo generar el código');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <SettingsHeader />
@@ -85,11 +107,35 @@ export default function SettingsScreen() {
             <View key={batch.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1E1E1E', padding: 15, borderRadius: 10, marginBottom: 10 }}>
               <Text style={{ fontSize: 24, marginRight: 15 }}>{batch.icon}</Text>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 16, color: '#FFFFFF', fontWeight: '500' }}>{batch.name}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 16, color: '#FFFFFF', fontWeight: '500' }}>{batch.name}</Text>
+                  {batch.sharedWith && batch.sharedWith.length > 1 && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10 }}>
+                      <Ionicons name="people" size={12} color="#A0A0A0" />
+                      <Text style={{ color: '#A0A0A0', fontSize: 12, marginLeft: 4, fontWeight: 'bold' }}>{batch.sharedWith.length}</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={{ fontSize: 14, color: '#A0A0A0' }}>${batch.monthlyLimit} / month</Text>
+                
+                {batch.sharedWith && batch.sharedWith.length > 1 && (
+                  <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#333' }}>
+                    <Text style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Miembros:</Text>
+                    {batch.sharedWith.map(member => (
+                      <Text key={member.id} style={{ fontSize: 13, color: '#CCC' }}>
+                        {member.email} {member.role === 'owner' ? '(Dueño)' : ''}
+                      </Text>
+                    ))}
+                  </View>
+                )}
               </View>
+              {batch.ownerId === user?.id && (
+                <TouchableOpacity onPress={() => handleShare(batch)} style={{ padding: 10 }}>
+                  <Ionicons name="share-outline" size={20} color="#00D1FF" />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity onPress={() => handleDeleteBatch(batch.id)} style={{ padding: 10 }}>
-                <Ionicons name="trash-outline" size={20} color="#FF4444" />
+                <Ionicons name={batch.ownerId === user?.id ? "trash-outline" : "log-out-outline"} size={20} color="#FF4444" />
               </TouchableOpacity>
             </View>
           ))}

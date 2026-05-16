@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 
 export const useSettingsScreen = () => {
-  const { user, batches, addBatch, removeBatch, resetData } = useBudget();
+  const { user, batches, addBatch, removeBatch, leaveBatch, refreshData, resetData } = useBudget();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [name, setName] = useState('');
@@ -36,7 +36,14 @@ export const useSettingsScreen = () => {
   };
 
   const handleDeleteBatch = async (id: string) => {
-    await removeBatch(id);
+    const batch = batches.find(b => b.id === id);
+    if (!batch) return;
+
+    if (batch.ownerId === user?.id) {
+      await removeBatch(id);
+    } else {
+      await leaveBatch(id);
+    }
   };
 
   return {
@@ -50,5 +57,6 @@ export const useSettingsScreen = () => {
     handleCreateBatch,
     handleDeleteBatch,
     handleLogout,
+    refreshData,
   };
 };

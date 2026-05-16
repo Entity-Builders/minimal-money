@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  Platform,
 } from 'react-native';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { joinBatchWithCode, JoinResult } from '@eb-packages/logic';
 import * as Haptics from 'expo-haptics';
@@ -61,7 +62,7 @@ export const JoinBudgetSheet: React.FC<JoinBudgetSheetProps> = ({ onJoined, onCl
         </View>
       ) : (
         <>
-          <TextInput
+          <BottomSheetTextInput
             style={[styles.input, error ? styles.inputError : null]}
             value={code}
             onChangeText={(t) => {

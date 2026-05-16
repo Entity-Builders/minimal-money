@@ -6,6 +6,7 @@ import {
   Share,
   ActivityIndicator,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +19,7 @@ interface ShareBudgetSheetProps {
   batchId: string;
   batchName: string;
   batchIcon: string;
-  memberCount: number;
+  members?: { id: string; email: string; role?: string }[];
   onClose: () => void;
 }
 
@@ -26,7 +27,7 @@ export const ShareBudgetSheet: React.FC<ShareBudgetSheetProps> = ({
   batchId,
   batchName,
   batchIcon,
-  memberCount,
+  members,
   onClose,
 }) => {
   const [invite, setInvite] = useState<InviteCode | null>(null);
@@ -38,8 +39,9 @@ export const ShareBudgetSheet: React.FC<ShareBudgetSheetProps> = ({
     try {
       const code = await generateInviteCode(batchId);
       setInvite(code);
-    } catch (e) {
-      // TODO: show error toast
+    } catch (e: any) {
+      console.error('Share error:', e);
+      Alert.alert('Error', e.message || 'No se pudo generar el código. Intenta nuevamente.');
     } finally {
       setLoading(false);
     }
@@ -73,10 +75,10 @@ export const ShareBudgetSheet: React.FC<ShareBudgetSheetProps> = ({
         <View style={styles.batchPill}>
           <Text style={styles.batchIcon}>{batchIcon}</Text>
           <Text style={styles.batchName}>{batchName}</Text>
-          {memberCount > 1 && (
+          {members && members.length > 1 && (
             <View style={styles.memberBadge}>
               <Ionicons name="people" size={12} color="#30D158" />
-              <Text style={styles.memberCount}>{memberCount}</Text>
+              <Text style={styles.memberCount}>{members.length}</Text>
             </View>
           )}
         </View>
@@ -88,6 +90,21 @@ export const ShareBudgetSheet: React.FC<ShareBudgetSheetProps> = ({
       <Text style={styles.subtitle}>
         Compartí este presupuesto con alguien. El código expira en 24 horas.
       </Text>
+
+      {/* Members List */}
+      {members && members.length > 1 && (
+        <View style={{ marginBottom: 20, paddingHorizontal: 16 }}>
+          <Text style={{ fontSize: 13, color: '#888', marginBottom: 8, fontWeight: '600' }}>MIEMBROS</Text>
+          {members.map(member => (
+            <View key={member.id} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+              <Ionicons name="person-circle-outline" size={18} color="#888" style={{ marginRight: 6 }} />
+              <Text style={{ fontSize: 14, color: '#E5E5EA' }}>
+                {member.email} {member.role === 'owner' && <Text style={{ color: '#FFD60A', fontSize: 12 }}> (Dueño)</Text>}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       {/* Code Display */}
       {invite ? (

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Transaction } from '../types';
+import { useBudget } from '../context/useBudget';
+import { Ionicons } from '@expo/vector-icons';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -11,6 +13,12 @@ interface TransactionItemProps {
 export const TransactionItem: React.FC<TransactionItemProps> = ({
   transaction,
 }) => {
+  const { user, activeBatch } = useBudget();
+  const isOwnerOfTransaction = user?.id === transaction.userId;
+  const isShared = (activeBatch?.sharedWith?.length ?? 1) > 1;
+  const authorMember = activeBatch?.sharedWith?.find(m => m.id === transaction.userId);
+  const authorName = isOwnerOfTransaction ? 'Yo' : (authorMember?.email?.split('@')[0] || 'Otro');
+
   // All transactions in Minimal Money are expenses — amounts are always positive.
   const timeAgo = formatDistanceToNow(new Date(transaction.timestamp), {
     addSuffix: true,
@@ -34,6 +42,18 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         >
           - $ {Math.abs(transaction.amount).toFixed(2)}
         </Text>
+        {isShared && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 }}>
+            <Ionicons 
+              name={isOwnerOfTransaction ? "person-circle" : "person-circle-outline"} 
+              size={14} 
+              color={isOwnerOfTransaction ? "#30D158" : "#888"} 
+            />
+            <Text style={{ fontSize: 10, color: isOwnerOfTransaction ? '#30D158' : '#888' }} numberOfLines={1}>
+              {authorName}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );

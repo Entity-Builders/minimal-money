@@ -19,9 +19,11 @@ export const useBudgetActions = (
       try {
         const newBatch = await BudgetService.addBatch(user.id, { name, icon, monthlyLimit });
         dispatch({ type: 'ADD_BATCH', payload: newBatch });
+        return true;
       } catch (e) {
         console.error('Failed to add batch', e);
         Sentry.captureException(e, { tags: { context: 'addBatch' } });
+        return false;
       }
     },
     [dispatch],
@@ -48,6 +50,24 @@ export const useBudgetActions = (
       } catch (e) {
         console.error('Failed to remove batch', e);
         Sentry.captureException(e, { tags: { context: 'removeBatch' } });
+      }
+    },
+    [dispatch],
+  );
+
+  const leaveBatch = useCallback(
+    async (id: string) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      try {
+        await BudgetService.leaveBatch(id, user.id);
+        dispatch({ type: 'REMOVE_BATCH', payload: id }); // We can just remove it from local state
+      } catch (e) {
+        console.error('Failed to leave batch', e);
+        Sentry.captureException(e, { tags: { context: 'leaveBatch' } });
       }
     },
     [dispatch],
@@ -112,13 +132,24 @@ export const useBudgetActions = (
     dispatch({ type: 'RESET' });
   }, [dispatch]);
 
+  const refreshData = useCallback(async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      await loadData(user.id);
+    }
+  }, [loadData]);
+
   return {
     addBatch,
     updateBatch,
     removeBatch,
+    leaveBatch,
     addTransaction,
     removeTransaction,
     setActiveBatch,
     resetData,
+    refreshData,
   };
 };

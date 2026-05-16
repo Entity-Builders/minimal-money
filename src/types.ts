@@ -21,6 +21,16 @@ export interface Transaction {
   timestamp: number;
   name: string;
   category?: string;
+  userId: string;
+}
+
+export interface BatchMember {
+  id: string;
+  batchId: string;
+  userId: string;
+  role: 'owner' | 'member';
+  joinedAt: number;
+  email: string;
 }
 
 export interface Batch {
@@ -29,7 +39,8 @@ export interface Batch {
   icon: string;
   monthlyLimit: number;
   currentBalance: number;
-  sharedWith?: string[]; // user IDs or emails
+  sharedWith: BatchMember[];
+  ownerId: string;
   createdAt: number;
 }
 
@@ -44,9 +55,11 @@ export interface BudgetState {
 
 export interface BudgetContextType extends BudgetState {
   // Actions
-  addBatch: (name: string, icon: string, monthlyLimit: number) => Promise<void>;
+  addBatch: (name: string, icon: string, monthlyLimit: number) => Promise<boolean | undefined>;
   updateBatch: (id: string, updates: Partial<Batch>) => Promise<void>;
   removeBatch: (id: string) => Promise<void>;
+  leaveBatch: (id: string) => Promise<void>;
+  refreshData: () => Promise<void>;
   
   addTransaction: (
     batchId: string,

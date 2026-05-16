@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Text,
   Keyboard,
+  AppState,
   FlatList,
   Dimensions,
   Pressable,
@@ -71,11 +72,24 @@ export default function MainScreen() {
     handleDetailChange,
     handleBackToAmount,
     shouldAutoFocus,
+    refreshData,
   } = useMainScreen();
 
   const { isDownloaded, reloadApp } = useOTAUpdate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [targetScrollBatchId, setTargetScrollBatchId] = useState<string | null>(null);
+
+  // Dismiss keyboard when app goes to background to prevent
+  // KeyboardAvoidingView layout corruption on foreground resume.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', nextState => {
+      if (nextState === 'background' || nextState === 'inactive') {
+        Keyboard.dismiss();
+      }
+    });
+    return () => sub.remove();
+  }, []);
   const flatListRef = useRef<FlatList>(null);
   const isScrollingProgrammatically = useRef(false);
 
@@ -90,8 +104,6 @@ export default function MainScreen() {
   // Sharing modal state
   const [shareTarget, setShareTarget] = useState<Batch | null>(null);
   const [showJoin, setShowJoin] = useState(false);
-  // memberCount per batch — loaded lazily from DB
-  const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
 
   const shareSheetRef = useRef<BottomSheetModal>(null);
   const joinSheetRef = useRef<BottomSheetModal>(null);
@@ -193,16 +205,36 @@ export default function MainScreen() {
 
   const activeBatch = batches.find(b => b.id === activeBatchId) ?? null;
 
-  const handleJoined = useCallback((result: JoinResult) => {
+  const handleJoined = useCallback(async (result: JoinResult) => {
     setShowJoin(false);
-    // The useBudget hook will reload batches automatically via Supabase Realtime
-    // If not wired yet, a simple refetch here would work too
-  }, []);
+    await refreshData();
+    if (result.batchId) {
+      setActiveBatchId(result.batchId);
+      setTargetScrollBatchId(result.batchId);
+    }
+  }, [refreshData, setActiveBatchId]);
+
+  useEffect(() => {
+    if (targetScrollBatchId && batches.length > 0) {
+      const index = batches.findIndex(b => b.id === targetScrollBatchId);
+      if (index !== -1) {
+        isScrollingProgrammatically.current = true;
+        // Small delay to ensure FlatList has rendered the new item
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({ index, animated: true });
+          setTimeout(() => {
+            isScrollingProgrammatically.current = false;
+          }, 300);
+        }, 100);
+        setTargetScrollBatchId(null);
+      }
+    }
+  }, [targetScrollBatchId, batches.length, batches]);
 
   const renderBatchSlide = ({ item }: { item: Batch }) => {
     const bgColor = getColorForBatch(item.id);
     const isActive = activeBatchId === item.id;
-    const memberCount = memberCounts[item.id] ?? 1;
+    const memberCount = item.sharedWith?.length || 1;
 
     return (
       <View style={{ width, flex: 1, backgroundColor: bgColor }}>
@@ -431,7 +463,7 @@ export default function MainScreen() {
               batchId={shareTarget.id}
               batchName={shareTarget.name}
               batchIcon={shareTarget.icon}
-              memberCount={memberCounts[shareTarget.id] ?? 1}
+              members={shareTarget.sharedWith}
               onClose={() => setShareTarget(null)}
             />
           )}
