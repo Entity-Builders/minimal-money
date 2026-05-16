@@ -1,9 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle, Image, Platform, Text } from 'react-native';
 
-const riveSource = require('../../assets/number_reflection_with_data_binding.riv');
-const riveUri = Image.resolveAssetSource(riveSource).uri;
-
 interface RiveReflectionProps {
   value: number;
   style?: ViewStyle;
@@ -23,6 +20,9 @@ const NativeRiveReflection: React.FC<RiveReflectionProps> = ({ value, style }) =
   // Require dynamically to prevent web bundler from evaluating native-only code
   const { default: Rive, Fit, AutoBind } = require('rive-react-native');
   const riveRef = React.useRef<any>(null);
+
+  const riveSource = require('../../assets/number_reflection_with_data_binding.riv');
+  const riveUri = Image.resolveAssetSource(riveSource).uri;
 
   const applyValue = React.useCallback((v: number) => {
     riveRef.current?.setNumber('Number property', v);
