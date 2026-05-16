@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/react-native';
 import { supabase } from '@eb-packages/logic';
 import { Batch, Currency, Transaction } from '../types';
 
-// Assuming we will use 'mm_batches' and 'mm_transactions' as tables in the shared project
+// Assuming we will use 'batches' and 'transactions' as tables in the minimal_money schema
 export const BudgetService = {
   async loadInitialData(userId: string) {
     const now = new Date();
@@ -13,10 +13,10 @@ export const BudgetService = {
     ).getTime(); // we use timestamp for simple filtering
 
     const [batchesResult, transactionsResult] = await Promise.all([
-      supabase.from('mm_batches').select('*').eq('user_id', userId),
+      supabase.from('batches').select('*').eq('user_id', userId),
       // We only load transactions for the current month by default to keep it light
       supabase
-        .from('mm_transactions')
+        .from('transactions')
         .select('*')
         .eq('user_id', userId)
         .gte('timestamp', startOfMonth)
@@ -78,7 +78,7 @@ export const BudgetService = {
     batchData: { name: string; icon: string; monthlyLimit: number },
   ) {
     const { data, error } = await supabase
-      .from('mm_batches')
+      .from('batches')
       .insert({
         user_id: userId,
         name: batchData.name,
@@ -118,7 +118,7 @@ export const BudgetService = {
     if (updates.currentBalance !== undefined) payload.current_balance = updates.currentBalance;
 
     const { error } = await supabase
-      .from('mm_batches')
+      .from('batches')
       .update(payload)
       .eq('id', id);
 
@@ -133,7 +133,7 @@ export const BudgetService = {
 
   async removeBatch(id: string) {
     const { error } = await supabase
-      .from('mm_batches')
+      .from('batches')
       .delete()
       .eq('id', id);
 
@@ -166,7 +166,7 @@ export const BudgetService = {
         : transactionData.amount;
 
     const { data, error } = await supabase
-      .from('mm_transactions')
+      .from('transactions')
       .insert({
         user_id: userId,
         batch_id: transactionData.batchId,
@@ -210,7 +210,7 @@ export const BudgetService = {
 
   async removeTransaction(id: string) {
     const { error } = await supabase
-      .from('mm_transactions')
+      .from('transactions')
       .delete()
       .eq('id', id);
 

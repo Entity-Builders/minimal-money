@@ -13,6 +13,7 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "development",
+        "EXPO_PUBLIC_SUPABASE_SCHEMA": "minimal_money",
         "SENTRY_ORG": "obrach",
         "SENTRY_PROJECT": "minimal-money"
       }
@@ -23,6 +24,7 @@
       "channel": "preview",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "preview",
+        "EXPO_PUBLIC_SUPABASE_SCHEMA": "minimal_money",
         "SENTRY_ORG": "obrach",
         "SENTRY_PROJECT": "minimal-money",
         "EXPO_PUBLIC_API_URL": "https://preview-api.minimalmoney.com",
@@ -46,6 +48,7 @@
       "channel": "production",
       "env": {
         "EXPO_PUBLIC_APP_ENV": "production",
+        "EXPO_PUBLIC_SUPABASE_SCHEMA": "minimal_money",
         "SENTRY_ORG": "obrach",
         "SENTRY_PROJECT": "minimal-money",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
