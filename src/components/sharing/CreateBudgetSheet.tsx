@@ -5,8 +5,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  Platform,
+  TextInput,
 } from 'react-native';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+
+const InputComponent = Platform.OS === 'web' ? TextInput : BottomSheetTextInput;
 import { Ionicons } from '@expo/vector-icons';
 import { useSettingsScreen } from '../../hooks/useSettingsScreen';
 import * as Haptics from 'expo-haptics';
@@ -45,14 +49,14 @@ export const CreateBudgetSheet: React.FC<CreateBudgetSheetProps> = ({ onCreated,
         Configura tu nuevo presupuesto.
       </Text>
 
-      <BottomSheetTextInput
+      <InputComponent
         style={styles.input}
         placeholder="Nombre (ej. Supermercado)"
         placeholderTextColor="#888"
         value={name}
         onChangeText={setName}
       />
-      <BottomSheetTextInput
+      <InputComponent
         style={styles.input}
         placeholder="Límite Mensual (ej. 500)"
         placeholderTextColor="#888"

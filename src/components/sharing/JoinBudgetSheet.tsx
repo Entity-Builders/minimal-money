@@ -8,6 +8,9 @@ import {
   Platform,
 } from 'react-native';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { TextInput } from 'react-native';
+
+const InputComponent = Platform.OS === 'web' ? TextInput : BottomSheetTextInput;
 import { Ionicons } from '@expo/vector-icons';
 import { joinBatchWithCode, JoinResult } from '@eb-packages/logic';
 import * as Haptics from 'expo-haptics';
@@ -62,7 +65,7 @@ export const JoinBudgetSheet: React.FC<JoinBudgetSheetProps> = ({ onJoined, onCl
         </View>
       ) : (
         <>
-          <BottomSheetTextInput
+          <InputComponent
             style={[styles.input, error ? styles.inputError : null]}
             value={code}
             onChangeText={(t) => {
