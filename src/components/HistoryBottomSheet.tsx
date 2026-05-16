@@ -263,7 +263,11 @@ export const HistoryBottomSheet = forwardRef<
             animatedContentStyle,
           ]}
         >
-          <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.header}
+            activeOpacity={0.8}
+            onPress={() => internalRef.current?.snapToIndex(2)}
+          >
             <Text
               variant="bodyMedium"
               style={{ color: theme.colors.onSurfaceVariant, marginBottom: 4 }}
@@ -285,7 +289,7 @@ export const HistoryBottomSheet = forwardRef<
             >
               {transactions.length} transacciones
             </Text>
-          </View>
+          </TouchableOpacity>
 
           <BottomSheetFlatList
             data={transactions}

@@ -102,9 +102,6 @@ export default function MainScreen() {
     };
   });
 
-  const handleOpenHistory = () => {
-    bottomSheetRef.current?.snapToIndex(2);
-  };
 
   const activeBatchIdRef = useRef(activeBatchId);
   useEffect(() => {
@@ -254,7 +251,6 @@ export default function MainScreen() {
                   key={item.id}
                   totalAvailable={item.currentBalance}
                   isRecoveryMode={false}
-                  onPress={handleOpenHistory}
                 />
               </Pressable>
 
