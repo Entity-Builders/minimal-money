@@ -27,6 +27,8 @@ interface DetailStepProps {
   handleBackToAmount: () => void;
   onFocus?: () => void;
   onBlur?: () => void;
+  onPreviousBatch?: () => void;
+  onNextBatch?: () => void;
 }
 
 export const DetailStep = ({
@@ -38,6 +40,8 @@ export const DetailStep = ({
   handleBackToAmount,
   onFocus,
   onBlur,
+  onPreviousBatch,
+  onNextBatch,
 }: DetailStepProps) => {
   const {
     focusProgress: detailFocusProgress,
@@ -130,7 +134,11 @@ export const DetailStep = ({
       </View>
       {Platform.OS === 'ios' && (
         <InputAccessoryView nativeID="detailInputAccessory">
-          <SkipButton onPress={handleExpenseSubmit} />
+          <SkipButton 
+            onPress={handleExpenseSubmit}
+            onPrevious={onPreviousBatch}
+            onNext={onNextBatch}
+          />
         </InputAccessoryView>
       )}
     </View>

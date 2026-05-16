@@ -156,7 +156,11 @@ export const AmountStep = ({
       </TouchableOpacity>
       {Platform.OS === 'ios' && (
         <InputAccessoryView nativeID="amountInputAccessory">
-          <ContinueButton onPress={handleNextStep} />
+          <ContinueButton 
+            onPress={handleNextStep} 
+            onPrevious={onPreviousBatch}
+            onNext={onNextBatch}
+          />
         </InputAccessoryView>
       )}
     </View>

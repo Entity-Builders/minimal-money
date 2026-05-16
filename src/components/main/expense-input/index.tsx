@@ -71,6 +71,8 @@ export const ExpenseInput = ({
           handleBackToAmount={handleBackToAmount}
           onFocus={onFocus}
           onBlur={onBlur}
+          onPreviousBatch={onPreviousBatch}
+          onNextBatch={onNextBatch}
         />
       )}
 

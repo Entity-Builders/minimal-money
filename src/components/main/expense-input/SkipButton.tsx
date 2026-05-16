@@ -1,13 +1,16 @@
 import React from 'react';
-import { Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { LiquidGlass } from '../../LiquidGlass';
 
 interface SkipButtonProps {
   onPress: () => void;
+  onPrevious?: () => void;
+  onNext?: () => void;
   style?: ViewStyle;
 }
 
-export const SkipButton = ({ onPress, style }: SkipButtonProps) => {
+export const SkipButton = ({ onPress, onPrevious, onNext, style }: SkipButtonProps) => {
   return (
     <LiquidGlass
       variant="default"
@@ -15,11 +18,32 @@ export const SkipButton = ({ onPress, style }: SkipButtonProps) => {
       style={[
         {
           padding: 20,
-          alignItems: 'flex-end',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         },
         style,
       ]}
     >
+      {(onPrevious || onNext) ? (
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <TouchableOpacity 
+            onPress={onPrevious}
+            style={{ padding: 8, backgroundColor: '#2C2C2E', borderRadius: 8, width: 44, alignItems: 'center' }}
+          >
+            <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={onNext}
+            style={{ padding: 8, backgroundColor: '#2C2C2E', borderRadius: 8, width: 44, alignItems: 'center' }}
+          >
+            <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View />
+      )}
+
       <TouchableOpacity
         onPress={onPress}
         style={{
