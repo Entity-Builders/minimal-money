@@ -119,6 +119,28 @@ export default function MainScreen() {
     }
   }).current;
 
+  const handlePreviousBatch = useCallback(() => {
+    const currentIndex = batches.findIndex(b => b.id === activeBatchIdRef.current);
+    if (currentIndex > 0) {
+      isScrollingProgrammatically.current = true;
+      const newActiveId = batches[currentIndex - 1].id;
+      setActiveBatchId(newActiveId);
+      flatListRef.current?.scrollToIndex({ index: currentIndex - 1, animated: true });
+      setTimeout(() => { isScrollingProgrammatically.current = false; }, 300);
+    }
+  }, [batches, setActiveBatchId]);
+
+  const handleNextBatch = useCallback(() => {
+    const currentIndex = batches.findIndex(b => b.id === activeBatchIdRef.current);
+    if (currentIndex < batches.length - 1) {
+      isScrollingProgrammatically.current = true;
+      const newActiveId = batches[currentIndex + 1].id;
+      setActiveBatchId(newActiveId);
+      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+      setTimeout(() => { isScrollingProgrammatically.current = false; }, 300);
+    }
+  }, [batches, setActiveBatchId]);
+
   const activeBatch = batches.find((b) => b.id === activeBatchId) ?? null;
 
   const getColorForBatch = (id: string) => {
@@ -273,6 +295,8 @@ export default function MainScreen() {
                   shouldAutoFocus={isActive && shouldAutoFocus && !isSheetOpen}
                   onFocus={handleFocus}
                   onBlur={handleBlur}
+                  onPreviousBatch={handlePreviousBatch}
+                  onNextBatch={handleNextBatch}
                 />
               </View>
             </KeyboardAvoidingView>

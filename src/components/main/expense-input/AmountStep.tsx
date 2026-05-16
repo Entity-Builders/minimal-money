@@ -30,6 +30,8 @@ interface AmountStepProps {
   onFocus?: () => void;
   onBlur?: () => void;
   handleNextStep: () => void;
+  onPreviousBatch?: () => void;
+  onNextBatch?: () => void;
 }
 
 export const AmountStep = ({
@@ -42,6 +44,8 @@ export const AmountStep = ({
   onFocus,
   onBlur,
   handleNextStep,
+  onPreviousBatch,
+  onNextBatch,
 }: AmountStepProps) => {
   const inputRef = React.useRef<TextInput>(null);
 
@@ -133,6 +137,13 @@ export const AmountStep = ({
         onBlur={() => {
           onBlurAmount();
           onBlur?.();
+        }}
+        onKeyPress={(e) => {
+          if (e.nativeEvent.key === 'ArrowLeft') {
+            onPreviousBatch?.();
+          } else if (e.nativeEvent.key === 'ArrowRight') {
+            onNextBatch?.();
+          }
         }}
       />
       <TouchableOpacity

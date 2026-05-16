@@ -25,8 +25,6 @@ export default function SettingsScreen() {
     batches,
     name,
     setName,
-    icon,
-    setIcon,
     limit,
     setLimit,
     loading,

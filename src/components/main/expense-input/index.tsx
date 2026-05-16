@@ -19,6 +19,8 @@ interface ExpenseInputProps {
   shouldAutoFocus: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
+  onPreviousBatch?: () => void;
+  onNextBatch?: () => void;
 }
 
 export const ExpenseInput = ({
@@ -35,6 +37,8 @@ export const ExpenseInput = ({
   shouldAutoFocus,
   onFocus,
   onBlur,
+  onPreviousBatch,
+  onNextBatch,
 }: ExpenseInputProps) => {
   // Wrapper to handle step transition logic locally if needed,
   // currently purely driven by props as per original design.
@@ -47,14 +51,15 @@ export const ExpenseInput = ({
         <AmountStep
           amount={amount}
           handleAmountChange={handleAmountChange}
-          handleExpenseSubmit={handleExpenseSubmit} // Keep passing it through if strictly needed,
-          // but conceptually AmountStep's "submit" is "go next"
-          handleNextStep={handleExpenseSubmit} // The hook handles transitioning to detail on submit if amount > 0
+          handleExpenseSubmit={handleExpenseSubmit}
+          handleNextStep={handleExpenseSubmit}
           currency={currency}
           handleCurrencyToggle={handleCurrencyToggle}
           shouldAutoFocus={shouldAutoFocus}
           onFocus={onFocus}
           onBlur={onBlur}
+          onPreviousBatch={onPreviousBatch}
+          onNextBatch={onNextBatch}
         />
       ) : (
         <DetailStep
