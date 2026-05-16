@@ -22,10 +22,12 @@ export const RiveReflection: React.FC<RiveReflectionProps> = ({
     riveRef.current?.play();
   }, []);
 
-  // Apply value on initial mount (after Rive has had a tick to initialize)
+  // Apply value on initial mount (retry a few times since Rive initialization time varies)
   React.useEffect(() => {
-    const timer = setTimeout(() => applyValue(value), 100);
-    return () => clearTimeout(timer);
+    const timers = [50, 150, 300, 500, 1000].map(delay =>
+      setTimeout(() => applyValue(value), delay),
+    );
+    return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

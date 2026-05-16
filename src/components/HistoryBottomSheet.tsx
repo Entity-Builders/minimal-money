@@ -26,14 +26,12 @@ import { MinimalTheme } from '../theme';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
-const BgColorContext = React.createContext<string>(MinimalTheme.glass.background);
+// Use a simpler approach since reanimated might capture the background.
 
 const CustomBackground: React.FC<BottomSheetBackgroundProps> = ({
   style,
   animatedIndex,
 }) => {
-  const bgColor = React.useContext(BgColorContext);
-
   const containerAnimatedStyle = useAnimatedStyle(() => {
     const borderRadius = interpolate(
       animatedIndex.value,
@@ -83,7 +81,6 @@ const CustomBackground: React.FC<BottomSheetBackgroundProps> = ({
         style,
         containerAnimatedStyle,
         {
-          backgroundColor: bgColor,
           overflow: 'hidden',
         },
       ]}
@@ -248,12 +245,13 @@ export const HistoryBottomSheet = forwardRef<
   }, []);
 
   return (
-    <BgColorContext.Provider value={props.bgColor ?? MinimalTheme.glass.background}>
+    <>
       <BottomSheet
         ref={internalRef}
         index={0}
         snapPoints={snapPoints}
         backgroundComponent={CustomBackground}
+        backgroundStyle={{ backgroundColor: props.bgColor ?? MinimalTheme.glass.background }}
         handleIndicatorStyle={styles.indicator}
         animatedIndex={animatedIndex}
         onChange={props.onChange}
@@ -316,7 +314,7 @@ export const HistoryBottomSheet = forwardRef<
           />
         </Animated.View>
       </BottomSheet>
-    </BgColorContext.Provider>
+    </>
   );
 });
 

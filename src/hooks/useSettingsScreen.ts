@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useBudget } from '../context/useBudget';
-import { supabase } from '@eb-packages/logic';
+import { supabase, generateBudgetIcon } from '@eb-packages/logic';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
@@ -10,7 +10,6 @@ export const useSettingsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [name, setName] = useState('');
-  const [icon, setIcon] = useState('📌');
   const [limit, setLimit] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -24,11 +23,16 @@ export const useSettingsScreen = () => {
     if (!name || isNaN(numericLimit) || numericLimit <= 0) return;
     
     setLoading(true);
-    await addBatch(name, icon, numericLimit);
-    setName('');
-    setIcon('📌');
-    setLimit('');
-    setLoading(false);
+    try {
+      const generatedIcon = await generateBudgetIcon(name);
+      await addBatch(name, generatedIcon, numericLimit);
+      setName('');
+      setLimit('');
+    } catch (e) {
+      console.error('Failed to create batch with icon:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeleteBatch = async (id: string) => {
@@ -40,8 +44,6 @@ export const useSettingsScreen = () => {
     batches,
     name,
     setName,
-    icon,
-    setIcon,
     limit,
     setLimit,
     loading,

@@ -131,11 +131,15 @@ export default function SettingsScreen() {
         animationType="slide"
         onRequestClose={() => setShowJoin(false)}
       >
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
-          onPress={() => setShowJoin(false)}
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          style={{ flex: 1 }}
         >
           <Pressable
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
+            onPress={() => setShowJoin(false)}
+          >
+            <Pressable
             style={{
               backgroundColor: '#1C1C1E',
               borderTopLeftRadius: 24,
@@ -149,8 +153,9 @@ export default function SettingsScreen() {
               onJoined={() => setShowJoin(false)}
               onClose={() => setShowJoin(false)}
             />
+            </Pressable>
           </Pressable>
-        </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* ── Create Modal ───────────────────────────────────── */}
@@ -160,11 +165,15 @@ export default function SettingsScreen() {
         animationType="slide"
         onRequestClose={() => setShowCreate(false)}
       >
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
-          onPress={() => setShowCreate(false)}
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          style={{ flex: 1 }}
         >
           <Pressable
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
+            onPress={() => setShowCreate(false)}
+          >
+            <Pressable
             style={{
               backgroundColor: '#1C1C1E',
               borderTopLeftRadius: 24,
@@ -178,8 +187,9 @@ export default function SettingsScreen() {
               onCreated={() => setShowCreate(false)}
               onClose={() => setShowCreate(false)}
             />
+            </Pressable>
           </Pressable>
-        </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

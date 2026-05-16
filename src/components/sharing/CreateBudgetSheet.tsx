@@ -19,8 +19,6 @@ export const CreateBudgetSheet: React.FC<CreateBudgetSheetProps> = ({ onCreated,
   const {
     name,
     setName,
-    icon,
-    setIcon,
     limit,
     setLimit,
     loading,
@@ -45,13 +43,6 @@ export const CreateBudgetSheet: React.FC<CreateBudgetSheetProps> = ({ onCreated,
         Configura tu nuevo presupuesto.
       </Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Icono (ej. 🛒)"
-        placeholderTextColor="#888"
-        value={icon}
-        onChangeText={setIcon}
-      />
       <TextInput
         style={styles.input}
         placeholder="Nombre (ej. Supermercado)"

@@ -106,12 +106,17 @@ export default function MainScreen() {
     bottomSheetRef.current?.snapToIndex(2);
   };
 
+  const activeBatchIdRef = useRef(activeBatchId);
+  useEffect(() => {
+    activeBatchIdRef.current = activeBatchId;
+  }, [activeBatchId]);
+
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     // Skip if we triggered this scroll programmatically
     if (isScrollingProgrammatically.current) return;
     if (viewableItems.length > 0) {
       const newActiveId = viewableItems[0].item.id;
-      if (newActiveId !== activeBatchId) {
+      if (newActiveId !== activeBatchIdRef.current) {
         setActiveBatchId(newActiveId);
       }
     }
