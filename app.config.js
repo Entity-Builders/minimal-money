@@ -1,5 +1,7 @@
 const { createAppConfig } = require('@eb-packages/expo-config');
 
+const isDev = process.env.EXPO_PUBLIC_APP_ENV === 'development';
+
 module.exports = createAppConfig({
   name: 'minimal-money',
   slug: 'minimal-money',
@@ -12,7 +14,7 @@ module.exports = createAppConfig({
     android: 'com.juanobrach.minimalmoney',
   },
 
-  icon: './assets/icon.png',
+  icon: isDev ? './assets/icon-dev.png' : './assets/icon.png',
   splash: {
     image: './assets/splash-icon.png',
     resizeMode: 'contain',

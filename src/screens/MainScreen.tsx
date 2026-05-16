@@ -13,9 +13,16 @@ import {
   ScrollView,
   InputAccessoryView,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import BottomSheet, { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, {
+  BottomSheetModal,
+  BottomSheetBackdrop,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -44,7 +51,8 @@ const { width } = Dimensions.get('window');
 
 export default function MainScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const {
     batches,
@@ -107,7 +115,7 @@ export default function MainScreen() {
         opacity={0.6}
       />
     ),
-    []
+    [],
   );
 
   const insets = useSafeAreaInsets();
@@ -131,7 +139,6 @@ export default function MainScreen() {
     };
   });
 
-
   const activeBatchIdRef = useRef(activeBatchId);
   useEffect(() => {
     activeBatchIdRef.current = activeBatchId;
@@ -149,28 +156,42 @@ export default function MainScreen() {
   }).current;
 
   const handlePreviousBatch = useCallback(() => {
-    const currentIndex = batches.findIndex(b => b.id === activeBatchIdRef.current);
+    const currentIndex = batches.findIndex(
+      b => b.id === activeBatchIdRef.current,
+    );
     if (currentIndex > 0) {
       isScrollingProgrammatically.current = true;
       const newActiveId = batches[currentIndex - 1].id;
       setActiveBatchId(newActiveId);
-      flatListRef.current?.scrollToIndex({ index: currentIndex - 1, animated: true });
-      setTimeout(() => { isScrollingProgrammatically.current = false; }, 300);
+      flatListRef.current?.scrollToIndex({
+        index: currentIndex - 1,
+        animated: true,
+      });
+      setTimeout(() => {
+        isScrollingProgrammatically.current = false;
+      }, 300);
     }
   }, [batches, setActiveBatchId]);
 
   const handleNextBatch = useCallback(() => {
-    const currentIndex = batches.findIndex(b => b.id === activeBatchIdRef.current);
+    const currentIndex = batches.findIndex(
+      b => b.id === activeBatchIdRef.current,
+    );
     if (currentIndex < batches.length - 1) {
       isScrollingProgrammatically.current = true;
       const newActiveId = batches[currentIndex + 1].id;
       setActiveBatchId(newActiveId);
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
-      setTimeout(() => { isScrollingProgrammatically.current = false; }, 300);
+      flatListRef.current?.scrollToIndex({
+        index: currentIndex + 1,
+        animated: true,
+      });
+      setTimeout(() => {
+        isScrollingProgrammatically.current = false;
+      }, 300);
     }
   }, [batches, setActiveBatchId]);
 
-  const activeBatch = batches.find((b) => b.id === activeBatchId) ?? null;
+  const activeBatch = batches.find(b => b.id === activeBatchId) ?? null;
 
   const handleJoined = useCallback((result: JoinResult) => {
     setShowJoin(false);
@@ -186,9 +207,24 @@ export default function MainScreen() {
     return (
       <View style={{ width, flex: 1, backgroundColor: bgColor }}>
         <SafeAreaView style={{ flex: 1 }}>
-          <View style={[styles.content, { flex: 1, paddingHorizontal: 24, paddingBottom: Platform.OS === 'ios' ? 20 : 20 }]}>
+          <View
+            style={[
+              styles.content,
+              {
+                flex: 1,
+                paddingHorizontal: 24,
+                paddingBottom: Platform.OS === 'ios' ? 20 : 20,
+              },
+            ]}
+          >
             {/* HEADER: Settings */}
-            <Animated.View style={[styles.header, animatedStyle, { pointerEvents: isInputFocused ? 'none' : 'auto' }]}>
+            <Animated.View
+              style={[
+                styles.header,
+                animatedStyle,
+                { pointerEvents: isInputFocused ? 'none' : 'auto' },
+              ]}
+            >
               {isDownloaded && (
                 <TouchableOpacity
                   onPress={reloadApp}
@@ -208,7 +244,9 @@ export default function MainScreen() {
                     color="#FFF"
                     style={{ marginRight: 6 }}
                   />
-                  <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '600' }}>
+                  <Text
+                    style={{ color: '#FFF', fontSize: 12, fontWeight: '600' }}
+                  >
                     Update
                   </Text>
                 </TouchableOpacity>
@@ -225,43 +263,68 @@ export default function MainScreen() {
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               style={{ flex: 1, justifyContent: 'space-between' }}
             >
-              <Pressable 
-                style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+              <Pressable
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
                 onPress={() => Keyboard.dismiss()}
               >
-                <View style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 8,
-                  marginBottom: 16,
-                }}>
-                  {/* Batch name pill */}
-                  <View style={{
-                    backgroundColor: 'rgba(0,0,0,0.3)',
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    borderRadius: 20,
+                <View
+                  style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                  }}>
-                    <Text style={{ fontSize: 18, marginRight: 8 }}>{item.icon}</Text>
-                    <Text style={{ color: '#E5E5EA', fontSize: 12, fontWeight: '700', letterSpacing: 1.5 }}>
+                    gap: 8,
+                    marginBottom: 16,
+                  }}
+                >
+                  {/* Batch name pill */}
+                  <View
+                    style={{
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      borderRadius: 20,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ fontSize: 18, marginRight: 8 }}>
+                      {item.icon}
+                    </Text>
+                    <Text
+                      style={{
+                        color: '#E5E5EA',
+                        fontSize: 12,
+                        fontWeight: '700',
+                        letterSpacing: 1.5,
+                      }}
+                    >
                       {item.name.toUpperCase()}
                     </Text>
                     {/* Shared indicator */}
                     {memberCount > 1 && (
-                      <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        marginLeft: 8,
-                        backgroundColor: 'rgba(48,209,88,0.15)',
-                        paddingHorizontal: 6,
-                        paddingVertical: 2,
-                        borderRadius: 10,
-                        gap: 3,
-                      }}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          marginLeft: 8,
+                          backgroundColor: 'rgba(48,209,88,0.15)',
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                          borderRadius: 10,
+                          gap: 3,
+                        }}
+                      >
                         <Ionicons name="people" size={11} color="#30D158" />
-                        <Text style={{ color: '#30D158', fontSize: 10, fontWeight: '700' }}>
+                        <Text
+                          style={{
+                            color: '#30D158',
+                            fontSize: 10,
+                            fontWeight: '700',
+                          }}
+                        >
                           {memberCount}
                         </Text>
                       </View>
@@ -278,13 +341,16 @@ export default function MainScreen() {
                     }}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Ionicons name="person-add-outline" size={15} color="#888" />
+                    <Ionicons
+                      name="person-add-outline"
+                      size={15}
+                      color="#888"
+                    />
                   </TouchableOpacity>
                 </View>
                 <BudgetFocusDisplay
                   key={item.id}
                   totalAvailable={item.currentBalance}
-                  isRecoveryMode={false}
                 />
               </Pressable>
 
@@ -322,7 +388,7 @@ export default function MainScreen() {
       <FlatList
         ref={flatListRef}
         data={batches}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         horizontal
         pagingEnabled
         scrollEnabled={!isInputFocused}
@@ -335,12 +401,18 @@ export default function MainScreen() {
         extraData={activeBatchId}
       />
 
-      <Animated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }, animatedStyle]} pointerEvents={isInputFocused ? 'none' : 'box-none'}>
+      <Animated.View
+        style={[
+          { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 },
+          animatedStyle,
+        ]}
+        pointerEvents={isInputFocused ? 'none' : 'box-none'}
+      >
         <HistoryBottomSheet
           ref={bottomSheetRef}
           bgColor={getColorForBatch(activeBatch?.id ?? '')}
           navigateTo={() => navigation.navigate('History')}
-          onChange={(index) => setIsSheetOpen(index > 0)}
+          onChange={index => setIsSheetOpen(index > 0)}
         />
       </Animated.View>
 
