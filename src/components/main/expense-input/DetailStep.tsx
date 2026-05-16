@@ -29,6 +29,7 @@ interface DetailStepProps {
   onBlur?: () => void;
   onPreviousBatch?: () => void;
   onNextBatch?: () => void;
+  batchId: string;
 }
 
 export const DetailStep = ({
@@ -42,6 +43,7 @@ export const DetailStep = ({
   onBlur,
   onPreviousBatch,
   onNextBatch,
+  batchId,
 }: DetailStepProps) => {
   const {
     focusProgress: detailFocusProgress,
@@ -121,7 +123,7 @@ export const DetailStep = ({
           onSubmitEditing={handleExpenseSubmit}
           returnKeyType="done"
           autoFocus
-          inputAccessoryViewID="detailInputAccessory"
+          inputAccessoryViewID={`detailInputAccessory-${batchId}`}
           onFocus={() => {
             onFocusDetail();
             onFocus?.();
@@ -133,7 +135,7 @@ export const DetailStep = ({
         />
       </View>
       {Platform.OS === 'ios' && (
-        <InputAccessoryView nativeID="detailInputAccessory">
+        <InputAccessoryView nativeID={`detailInputAccessory-${batchId}`}>
           <SkipButton 
             onPress={handleExpenseSubmit}
             onPrevious={onPreviousBatch}

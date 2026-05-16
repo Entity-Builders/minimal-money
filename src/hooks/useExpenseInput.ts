@@ -4,6 +4,8 @@ import { useAutoFocusOnActive } from './useAutoFocusOnActive';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Currency } from '../types';
 
+import * as Haptics from 'expo-haptics';
+
 interface UseExpenseInputProps {
   addTransaction: (
     amount: number,
@@ -85,6 +87,7 @@ export const useExpenseInput = ({
       if (val > 0) {
         const rateToUse = getRate(currency);
         await addTransaction(val, currency, rateToUse, undefined, finalName);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
         // Reset inputs but KEEP currency and KEEP focus behavior if desired
         setAmount('');

@@ -21,6 +21,7 @@ interface ExpenseInputProps {
   onBlur?: () => void;
   onPreviousBatch?: () => void;
   onNextBatch?: () => void;
+  batchId: string;
 }
 
 export const ExpenseInput = ({
@@ -39,6 +40,7 @@ export const ExpenseInput = ({
   onBlur,
   onPreviousBatch,
   onNextBatch,
+  batchId,
 }: ExpenseInputProps) => {
   // Wrapper to handle step transition logic locally if needed,
   // currently purely driven by props as per original design.
@@ -60,6 +62,7 @@ export const ExpenseInput = ({
           onBlur={onBlur}
           onPreviousBatch={onPreviousBatch}
           onNextBatch={onNextBatch}
+          batchId={batchId}
         />
       ) : (
         <DetailStep
@@ -73,6 +76,7 @@ export const ExpenseInput = ({
           onBlur={onBlur}
           onPreviousBatch={onPreviousBatch}
           onNextBatch={onNextBatch}
+          batchId={batchId}
         />
       )}
 

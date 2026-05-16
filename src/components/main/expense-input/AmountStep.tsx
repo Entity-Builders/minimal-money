@@ -32,6 +32,7 @@ interface AmountStepProps {
   handleNextStep: () => void;
   onPreviousBatch?: () => void;
   onNextBatch?: () => void;
+  batchId: string;
 }
 
 export const AmountStep = ({
@@ -46,6 +47,7 @@ export const AmountStep = ({
   handleNextStep,
   onPreviousBatch,
   onNextBatch,
+  batchId,
 }: AmountStepProps) => {
   const inputRef = React.useRef<TextInput>(null);
 
@@ -129,7 +131,7 @@ export const AmountStep = ({
         onSubmitEditing={handleNextStep}
         returnKeyType="done"
         autoFocus={shouldAutoFocus}
-        inputAccessoryViewID="amountInputAccessory"
+        inputAccessoryViewID={`amountInputAccessory-${batchId}`}
         onFocus={() => {
           onFocusAmount();
           onFocus?.();
@@ -155,7 +157,7 @@ export const AmountStep = ({
         </Animated.Text>
       </TouchableOpacity>
       {Platform.OS === 'ios' && (
-        <InputAccessoryView nativeID="amountInputAccessory">
+        <InputAccessoryView nativeID={`amountInputAccessory-${batchId}`}>
           <ContinueButton 
             onPress={handleNextStep} 
             onPrevious={onPreviousBatch}

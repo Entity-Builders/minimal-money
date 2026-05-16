@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSettingsScreen } from '../../hooks/useSettingsScreen';
+import * as Haptics from 'expo-haptics';
 
 interface CreateBudgetSheetProps {
   onCreated: () => void;
@@ -27,6 +28,7 @@ export const CreateBudgetSheet: React.FC<CreateBudgetSheetProps> = ({ onCreated,
 
   const handleCreate = async () => {
     await handleCreateBatch();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     onCreated();
   };
 

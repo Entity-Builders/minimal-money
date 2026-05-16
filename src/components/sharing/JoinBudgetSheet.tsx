@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { joinBatchWithCode, JoinResult } from '@eb-packages/logic';
+import * as Haptics from 'expo-haptics';
 
 interface JoinBudgetSheetProps {
   onJoined: (result: JoinResult) => void;
@@ -28,6 +29,7 @@ export const JoinBudgetSheet: React.FC<JoinBudgetSheetProps> = ({ onJoined, onCl
     try {
       const result = await joinBatchWithCode(code);
       setSuccess(result);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setTimeout(() => {
         onJoined(result);
       }, 1200);

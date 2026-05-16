@@ -297,6 +297,7 @@ export default function MainScreen() {
                   onBlur={handleBlur}
                   onPreviousBatch={handlePreviousBatch}
                   onNextBatch={handleNextBatch}
+                  batchId={item.id}
                 />
               </View>
             </KeyboardAvoidingView>
