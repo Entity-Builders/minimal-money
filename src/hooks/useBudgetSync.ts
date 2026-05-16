@@ -37,6 +37,38 @@ export const useBudgetSync = (dispatch: React.Dispatch<BudgetAction>) => {
   );
 
   useEffect(() => {
+    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+
+    const setupRealtime = (userId: string) => {
+      if (realtimeChannel) return;
+      realtimeChannel = supabase
+        .channel('minimal_money_sync')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'minimal_money', table: 'transactions' },
+          () => {
+            console.log('Realtime update: transactions changed');
+            loadData(userId);
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'minimal_money', table: 'batches' },
+          () => {
+            console.log('Realtime update: batches changed');
+            loadData(userId);
+          }
+        )
+        .subscribe();
+    };
+
+    const cleanupRealtime = () => {
+      if (realtimeChannel) {
+        supabase.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+      }
+    };
+
     // Determine session and load data
     const init = async () => {
       const {
@@ -45,6 +77,7 @@ export const useBudgetSync = (dispatch: React.Dispatch<BudgetAction>) => {
       if (session) {
         dispatch({ type: 'SET_USER', payload: session.user });
         loadData(session.user.id);
+        setupRealtime(session.user.id);
       } else {
         dispatch({
           type: 'SET_DATA',
@@ -64,14 +97,17 @@ export const useBudgetSync = (dispatch: React.Dispatch<BudgetAction>) => {
         if (event === 'SIGNED_IN' && session) {
           dispatch({ type: 'SET_USER', payload: session.user });
           loadData(session.user.id);
+          setupRealtime(session.user.id);
         } else if (event === 'SIGNED_OUT') {
           dispatch({ type: 'RESET' });
+          cleanupRealtime();
         }
       },
     );
 
     return () => {
       authListener.subscription.unsubscribe();
+      cleanupRealtime();
     };
   }, [dispatch, loadData]);
 
