@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Platform,
   TextInput,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 

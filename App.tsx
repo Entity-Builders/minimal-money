@@ -62,14 +62,14 @@ function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <PaperProvider theme={MinimalTheme}>
-          <BottomSheetModalProvider>
-            <BudgetProvider>
+          <BudgetProvider>
+            <BottomSheetModalProvider>
               <NavigationContainer>
                 <StatusBar style="light" />
                 <RootNavigator />
               </NavigationContainer>
-            </BudgetProvider>
-          </BottomSheetModalProvider>
+            </BottomSheetModalProvider>
+          </BudgetProvider>
         </PaperProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

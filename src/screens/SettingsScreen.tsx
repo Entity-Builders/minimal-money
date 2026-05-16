@@ -11,7 +11,7 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
-import BottomSheet, { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetModal, BottomSheetBackdrop, BottomSheetView, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettingsScreen } from '../hooks/useSettingsScreen';
 import { styles } from './SettingsScreenStyles';
@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { JoinBudgetSheet } from '../components/sharing/JoinBudgetSheet';
 import { CreateBudgetSheet } from '../components/sharing/CreateBudgetSheet';
 import { generateInviteCode } from '@eb-packages/logic';
+import { SharedAvatars } from '../components/sharing/SharedAvatars';
 import * as Clipboard from 'expo-clipboard';
 
 export default function SettingsScreen() {
@@ -34,6 +35,7 @@ export default function SettingsScreen() {
     handleCreateBatch,
     handleDeleteBatch,
     handleLogout,
+    refreshData,
   } = useSettingsScreen();
 
   const insets = useSafeAreaInsets();
@@ -110,10 +112,11 @@ export default function SettingsScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text style={{ fontSize: 16, color: '#FFFFFF', fontWeight: '500' }}>{batch.name}</Text>
                   {batch.sharedWith && batch.sharedWith.length > 1 && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10 }}>
-                      <Ionicons name="people" size={12} color="#A0A0A0" />
-                      <Text style={{ color: '#A0A0A0', fontSize: 12, marginLeft: 4, fontWeight: 'bold' }}>{batch.sharedWith.length}</Text>
-                    </View>
+                    <SharedAvatars 
+                      members={batch.sharedWith} 
+                      size={18} 
+                      borderColor="#1C1C1E" 
+                    />
                   )}
                 </View>
                 <Text style={{ fontSize: 14, color: '#A0A0A0' }}>${batch.monthlyLimit} / month</Text>
@@ -201,14 +204,18 @@ export default function SettingsScreen() {
         onDismiss={() => setShowJoin(false)}
         backgroundStyle={{ backgroundColor: '#1C1C1E' }}
         handleIndicatorStyle={{ backgroundColor: '#444' }}
-        keyboardBehavior="extend"
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
       >
-        <BottomSheetView style={{ paddingBottom: insets.bottom + 8 }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
           <JoinBudgetSheet
-            onJoined={() => setShowJoin(false)}
+            onJoined={() => {
+              setShowJoin(false);
+              refreshData();
+            }}
             onClose={() => setShowJoin(false)}
           />
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
 
       {/* ── Create Modal ───────────────────────────────────── */}
@@ -219,14 +226,15 @@ export default function SettingsScreen() {
         onDismiss={() => setShowCreate(false)}
         backgroundStyle={{ backgroundColor: '#1C1C1E' }}
         handleIndicatorStyle={{ backgroundColor: '#444' }}
-        keyboardBehavior="extend"
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
       >
-        <BottomSheetView style={{ paddingBottom: insets.bottom + 8 }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
           <CreateBudgetSheet
             onCreated={() => setShowCreate(false)}
             onClose={() => setShowCreate(false)}
           />
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </SafeAreaView>
   );

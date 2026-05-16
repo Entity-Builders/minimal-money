@@ -17,6 +17,7 @@ import Animated, {
   useAnimatedProps,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { SharedAvatars } from './sharing/SharedAvatars';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Transaction } from '../types';
@@ -291,10 +292,11 @@ export const HistoryBottomSheet = forwardRef<
                 {transactions.length} transacciones
               </Text>
               {activeBatch?.sharedWith && activeBatch.sharedWith.length > 1 && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10 }}>
-                  <Ionicons name="people" size={12} color={theme.colors.onSurfaceVariant} />
-                  <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 12, marginLeft: 4, fontWeight: 'bold' }}>{activeBatch.sharedWith.length}</Text>
-                </View>
+                <SharedAvatars 
+                  members={activeBatch.sharedWith} 
+                  size={16} 
+                  borderColor={props.bgColor ?? MinimalTheme.glass.background} 
+                />
               )}
             </View>
           </TouchableOpacity>

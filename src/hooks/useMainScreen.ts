@@ -7,8 +7,15 @@ import { useExpenseInput } from './useExpenseInput';
 import { useState } from 'react';
 
 export const useMainScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { batches, activeBatchId, setActiveBatch, addTransaction, refreshData } = useBudget();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const {
+    batches,
+    activeBatchId,
+    setActiveBatch,
+    addTransaction,
+    refreshData,
+  } = useBudget();
   const { rates, loading: rateLoading, getRate, refresh } = useExchangeRate();
 
   // Use the new hook for expense input logic
@@ -26,6 +33,7 @@ export const useMainScreen = () => {
     navigation.navigate('Settings');
   };
 
+  console.log('$$$batches', JSON.stringify(batches, null, 2));
 
   return {
     batches,

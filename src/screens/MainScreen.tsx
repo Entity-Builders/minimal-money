@@ -23,6 +23,7 @@ import BottomSheet, {
   BottomSheetModal,
   BottomSheetBackdrop,
   BottomSheetView,
+  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import Animated, {
   useSharedValue,
@@ -33,6 +34,7 @@ import Animated, {
 import { HistoryBottomSheet } from '../components/HistoryBottomSheet';
 import { ShareBudgetSheet } from '../components/sharing/ShareBudgetSheet';
 import { JoinBudgetSheet } from '../components/sharing/JoinBudgetSheet';
+import { SharedAvatars } from '../components/sharing/SharedAvatars';
 
 import { useMainScreen } from '../hooks/useMainScreen';
 import { useOTAUpdate } from '../hooks/useOTAUpdate';
@@ -336,31 +338,12 @@ export default function MainScreen() {
                       {item.name.toUpperCase()}
                     </Text>
                     {/* Shared indicator */}
-                    {memberCount > 1 && (
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          marginLeft: 8,
-                          backgroundColor: 'rgba(48,209,88,0.15)',
-                          paddingHorizontal: 6,
-                          paddingVertical: 2,
-                          borderRadius: 10,
-                          gap: 3,
-                        }}
-                      >
-                        <Ionicons name="people" size={11} color="#30D158" />
-                        <Text
-                          style={{
-                            color: '#30D158',
-                            fontSize: 10,
-                            fontWeight: '700',
-                          }}
-                        >
-                          {memberCount}
-                        </Text>
-                      </View>
-                    )}
+                    <SharedAvatars
+                      members={item.sharedWith || []}
+                      size={20}
+                      borderColor={bgColor}
+                      onPress={() => setShareTarget(item)}
+                    />
                   </View>
 
                   {/* Share button */}
@@ -431,6 +414,7 @@ export default function MainScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         extraData={activeBatchId}
+        getItemLayout={(data, index) => ({ length: width, offset: width * index, index })}
       />
 
       <Animated.View
@@ -478,14 +462,15 @@ export default function MainScreen() {
         onDismiss={() => setShowJoin(false)}
         backgroundStyle={{ backgroundColor: '#1C1C1E' }}
         handleIndicatorStyle={{ backgroundColor: '#444' }}
-        keyboardBehavior="extend"
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
       >
-        <BottomSheetView style={{ paddingBottom: insets.bottom + 8 }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
           <JoinBudgetSheet
             onJoined={handleJoined}
             onClose={() => setShowJoin(false)}
           />
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </View>
   );

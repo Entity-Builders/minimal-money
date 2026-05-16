@@ -10,7 +10,7 @@
     "build:dev": "eas build --profile development",
     "build:preview": "eas build --profile preview --platform ios",
     "build:prod": "eas build --profile production --platform ios",
-    "build:preview:testflight": "eas build --profile preview-testflight --platform ios --auto-submit",
+    "build:preview:testflight": "eas build --profile preview --platform ios --auto-submit",
     "update:preview": "eas update --branch preview --message \"OTA update\"",
     "update:prod": "eas update --branch production --message \"OTA update\"",
     "test": "jest",
