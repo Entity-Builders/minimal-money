@@ -17,13 +17,14 @@ export const useBudgetActions = (
       if (!user) return;
 
       try {
+        console.log(`[useBudgetActions] Adding budget for user: ${user.id} (${user.email})`);
         const newBatch = await BudgetService.addBatch(user.id, { name, icon, monthlyLimit });
         dispatch({ type: 'ADD_BATCH', payload: newBatch });
-        return true;
-      } catch (e) {
-        console.error('Failed to add batch', e);
-        Sentry.captureException(e, { tags: { context: 'addBatch' } });
-        return false;
+        return { success: true };
+      } catch (e: any) {
+        console.error('[useBudgetActions] Failed to add batch:', e);
+        Sentry.captureException(e, { tags: { context: 'addBatch', userId: user.id } });
+        return { success: false, error: e?.message || JSON.stringify(e) || 'Unknown error' };
       }
     },
     [dispatch],

@@ -14,46 +14,36 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [token, setToken] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
+  const [otpSent, setOtpSent] = useState(false);
 
-  const handleAuth = async () => {
-    console.log('handleAuth triggered', { isLogin });
+  const handleSendOtp = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Por favor ingresa tu email.');
+      return;
+    }
     setLoading(true);
 
     Sentry.addBreadcrumb({
       category: 'auth',
-      message: `Attempting to ${isLogin ? 'login' : 'sign up'}`,
+      message: 'Attempting to send OTP',
       level: 'info',
     });
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (error) throw error;
-        Alert.alert(
-          'Registro exitoso',
-          '¡Cuenta creada! Revisa tu email o inicia sesión.',
-        );
-      }
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+      });
+      if (error) throw error;
+      setOtpSent(true);
     } catch (error: any) {
-      console.log('Auth error caught', error);
+      console.log('OTP send error caught', error);
       Sentry.captureException(error, {
-        tags: { context: isLogin ? 'login' : 'signup' },
+        tags: { context: 'send_otp' },
         extra: { rawError: JSON.stringify(error) },
       });
 
-      // Enhanced Error Alert
       const errorDetails = [
         error.message,
         error.cause ? `Cause: ${error.cause}` : '',
@@ -63,9 +53,44 @@ export default function AuthScreen() {
         .filter(Boolean)
         .join('\n');
 
-      Alert.alert('Authentication Error', errorDetails);
+      Alert.alert('Error enviando código', errorDetails);
     } finally {
-      Sentry.logger.info('Auth completed');
+      Sentry.logger.info('Send OTP completed');
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!token) {
+      Alert.alert('Error', 'Por favor ingresa el código.');
+      return;
+    }
+    setLoading(true);
+
+    Sentry.addBreadcrumb({
+      category: 'auth',
+      message: 'Attempting to verify OTP',
+      level: 'info',
+    });
+
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      });
+      if (error) throw error;
+      // successful login will automatically update the session and trigger navigation in App.tsx
+    } catch (error: any) {
+      console.log('OTP verify error caught', error);
+      Sentry.captureException(error, {
+        tags: { context: 'verify_otp' },
+        extra: { rawError: JSON.stringify(error) },
+      });
+
+      Alert.alert('Código incorrecto', error.message);
+    } finally {
+      Sentry.logger.info('Verify OTP completed');
       setLoading(false);
     }
   };
@@ -74,52 +99,59 @@ export default function AuthScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>Minimal Money</Text>
-        <Text style={styles.subtitle}>{isLogin ? 'Login' : 'Sign Up'}</Text>
+        <Text style={styles.subtitle}>
+          {otpSent ? 'Ingresa tu código' : 'Ingresa con tu email'}
+        </Text>
 
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#666"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            placeholderTextColor="#666"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          {!otpSent ? (
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#666"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          ) : (
+            <TextInput
+              style={styles.input}
+              placeholder="Código de 6 dígitos"
+              placeholderTextColor="#666"
+              value={token}
+              onChangeText={setToken}
+              autoCapitalize="none"
+              keyboardType="number-pad"
+              maxLength={6}
+              textContentType="oneTimeCode"
+              autoComplete="one-time-code"
+            />
+          )}
         </View>
 
         <TouchableOpacity
           style={styles.button}
-          onPress={handleAuth}
+          onPress={otpSent ? handleVerifyOtp : handleSendOtp}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="#000" />
           ) : (
             <Text style={styles.buttonText}>
-              {isLogin ? 'Entrar' : 'Registrarse'}
+              {otpSent ? 'Verificar código' : 'Enviar código'}
             </Text>
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.switchButton}
-          onPress={() => setIsLogin(!isLogin)}
-        >
-          <Text style={styles.switchText}>
-            {isLogin
-              ? '¿No tienes cuenta? Regístrate'
-              : '¿Ya tienes cuenta? Inicia sesión'}
-          </Text>
-        </TouchableOpacity>
+        {otpSent && !loading && (
+          <TouchableOpacity
+            style={styles.switchButton}
+            onPress={() => setOtpSent(false)}
+          >
+            <Text style={styles.switchText}>Usar otro email</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );

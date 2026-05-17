@@ -14,7 +14,7 @@ import { TextInput } from 'react-native';
 const InputComponent = Platform.OS === 'web' ? TextInput : BottomSheetTextInput;
 import { Ionicons } from '@expo/vector-icons';
 import { joinBatchWithCode, JoinResult } from '@eb-packages/logic';
-import * as Haptics from 'expo-haptics';
+import { safeHaptics as Haptics } from '../../utils/haptics';
 
 interface JoinBudgetSheetProps {
   onJoined: (result: JoinResult) => void;

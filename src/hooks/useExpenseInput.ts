@@ -4,7 +4,7 @@ import { useAutoFocusOnActive } from './useAutoFocusOnActive';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Currency } from '../types';
 
-import * as Haptics from 'expo-haptics';
+import { safeHaptics as Haptics } from '../utils/haptics';
 
 interface UseExpenseInputProps {
   addTransaction: (

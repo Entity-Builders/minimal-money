@@ -15,7 +15,7 @@ import { useOnboarding } from '../hooks/useOnboarding';
 import { styles } from './OnboardingStyles';
 import { JoinBudgetSheet } from '../components/sharing/JoinBudgetSheet';
 import { useBudget } from '../context/useBudget';
-import * as Haptics from 'expo-haptics';
+import { safeHaptics as Haptics } from '../utils/haptics';
 
 export const OnboardingScreen: React.FC = () => {
   const { name, setName, icon, setIcon, monthlyLimit, setMonthlyLimit, loading, error, finishOnboarding } = useOnboarding();

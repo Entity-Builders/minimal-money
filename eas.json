@@ -31,7 +31,6 @@
         "SENTRY_ORG": "obrach",
         "SENTRY_PROJECT": "minimal-money",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_API_URL": "https://preview-api.minimalmoney.com",
         "EXPO_PUBLIC_SENTRY_DSN": "https://bb045b86910322a8033d4a228aa1c238@o1031007.ingest.us.sentry.io/4510501735628800"
       }
     },
@@ -46,7 +45,6 @@
         "SENTRY_ORG": "obrach",
         "SENTRY_PROJECT": "minimal-money",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_API_URL": "https://api.minimalmoney.com",
         "EXPO_PUBLIC_SENTRY_DSN": "https://bb045b86910322a8033d4a228aa1c238@o1031007.ingest.us.sentry.io/4510501735628800"
       }
     }

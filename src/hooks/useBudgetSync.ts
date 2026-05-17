@@ -71,13 +71,26 @@ export const useBudgetSync = (dispatch: React.Dispatch<BudgetAction>) => {
 
     // Determine session and load data
     const init = async () => {
+      // getSession reads the JWT from local storage
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
       if (session) {
-        dispatch({ type: 'SET_USER', payload: session.user });
-        loadData(session.user.id);
-        setupRealtime(session.user.id);
+        // CRITICAL: We must verify the session is still valid against the current database.
+        // If the user was logged into a local DB and OTA updated to cloud, the JWT is invalid here!
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if (error || !user) {
+          console.warn('Session found but user is invalid (likely swapped databases). Forcing sign out.', error);
+          await supabase.auth.signOut();
+          dispatch({ type: 'RESET' });
+          return;
+        }
+
+        dispatch({ type: 'SET_USER', payload: user });
+        loadData(user.id);
+        setupRealtime(user.id);
       } else {
         dispatch({
           type: 'SET_DATA',

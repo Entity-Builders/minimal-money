@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useBudget } from '../context/useBudget';
+import { supabase } from '@eb-packages/logic';
 
 export const useOnboarding = () => {
   const { addBatch } = useBudget();
@@ -16,11 +17,21 @@ export const useOnboarding = () => {
 
     setLoading(true);
     setError(null);
-    const success = await addBatch(name, icon, limit);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('[useOnboarding] finishOnboarding called with name:', name, 'limit:', limit, 'by user:', user?.id);
+    } catch (e) {
+      console.error('[useOnboarding] Error fetching user:', e);
+    }
+
+    const result = await addBatch(name, icon, limit);
     setLoading(false);
     
-    if (success === false) {
-      setError('Ocurrió un error creando el budget. Por favor intente nuevamente.');
+    if (result && result.success === false) {
+      console.error('[useOnboarding] addBatch failed with error:', result.error);
+      setError(`Error: ${result.error}`);
+    } else if (!result) {
+      setError('Ocurrió un error inesperado al intentar crear el budget.');
     }
   };
 

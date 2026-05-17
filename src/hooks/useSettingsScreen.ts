@@ -18,18 +18,24 @@ export const useSettingsScreen = () => {
     resetData(); // Clear local state
   };
 
-  const handleCreateBatch = async () => {
+  const handleCreateBatch = async (): Promise<{ success: boolean; error?: string }> => {
     const numericLimit = parseFloat(limit);
-    if (!name || isNaN(numericLimit) || numericLimit <= 0) return;
+    if (!name || isNaN(numericLimit) || numericLimit <= 0) return { success: false, error: 'Invalid name or limit' };
     
     setLoading(true);
     try {
       const generatedIcon = await generateBudgetIcon(name);
-      await addBatch(name, generatedIcon, numericLimit);
-      setName('');
-      setLimit('');
-    } catch (e) {
+      // addBatch now returns { success, error }
+      const result = await addBatch(name, generatedIcon, numericLimit);
+      
+      if (result?.success) {
+        setName('');
+        setLimit('');
+      }
+      return result || { success: false, error: 'Unknown error' };
+    } catch (e: any) {
       console.error('Failed to create batch with icon:', e);
+      return { success: false, error: e?.message || JSON.stringify(e) || 'Failed to create batch' };
     } finally {
       setLoading(false);
     }

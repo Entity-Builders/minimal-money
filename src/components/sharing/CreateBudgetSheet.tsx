@@ -8,13 +8,14 @@ import {
   Platform,
   TextInput,
   KeyboardAvoidingView,
+  Alert,
 } from 'react-native';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 
 const InputComponent = Platform.OS === 'web' ? TextInput : BottomSheetTextInput;
 import { Ionicons } from '@expo/vector-icons';
 import { useSettingsScreen } from '../../hooks/useSettingsScreen';
-import * as Haptics from 'expo-haptics';
+import { safeHaptics as Haptics } from '../../utils/haptics';
 
 interface CreateBudgetSheetProps {
   onCreated: () => void;
@@ -32,9 +33,14 @@ export const CreateBudgetSheet: React.FC<CreateBudgetSheetProps> = ({ onCreated,
   } = useSettingsScreen();
 
   const handleCreate = async () => {
-    await handleCreateBatch();
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onCreated();
+    const result = await handleCreateBatch();
+    if (result?.success) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      onCreated();
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert('Error', result?.error || 'Ocurrió un error creando el budget. Por favor intente nuevamente.');
+    }
   };
 
   return (
