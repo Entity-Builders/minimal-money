@@ -1,0 +1,29 @@
+# flows/create-budget.yaml
+# Reutilizable: Crea un budget desde la pantalla de onboarding
+# USO: - runFlow: file: flows/create-budget.yaml
+
+appId: com.juanobrach.minimalmoney.development
+---
+#   BUDGET_NAME  → nombre del budget (default: 'E2E Budget')
+#   BUDGET_LIMIT → límite mensual   (default: '2000')
+
+- runFlow:
+    when:
+      visible: 'Create Budget'
+    commands:
+      - tapOn: 'Create Budget'
+      - extendedWaitUntil:
+          visible: 'New Budget'
+          timeout: 5000
+      - tapOn: 'Supermercado'
+      - inputText: ${BUDGET_NAME:-E2E Budget}
+      - tapOn: '0'
+      - inputText: ${BUDGET_LIMIT:-2000}
+      - tapOn: 'OK'
+      - waitForAnimationToEnd
+      - tapOn: 'Create Budget'
+
+# Esperar a que la AI genere el icono (puede tardar hasta 10s)
+- extendedWaitUntil:
+    notVisible: 'Create Budget'
+    timeout: 15000

@@ -1,0 +1,29 @@
+# flows/auth.yaml
+# Reutilizable: Autenticación por OTP (adaptivo — solo corre si el user NO está logueado)
+# USO: - runFlow: file: flows/auth.yaml
+
+appId: com.juanobrach.minimalmoney.development
+---
+
+- runFlow:
+    when:
+      visible: 'Minimal Money'
+    commands:
+      - tapOn:
+          id: "auth-email-input"
+      - inputText: 'maestro@minimalmoney.com'
+      - hideKeyboard
+      - waitForAnimationToEnd
+      - tapOn: 'Enviar código'
+      - extendedWaitUntil:
+          visible: 'Ingresa tu código'
+          timeout: 5000
+      - tapOn:
+          id: "auth-otp-input"
+      - inputText: '123456'
+      - tapOn: 'Verificar código'
+
+# Esperar a que la navegación post-login complete
+- extendedWaitUntil:
+    notVisible: 'Enviar código'
+    timeout: 10000

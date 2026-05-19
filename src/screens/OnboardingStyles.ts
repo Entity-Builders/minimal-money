@@ -80,33 +80,86 @@ export const styles = StyleSheet.create({
     marginBottom: 40,
     letterSpacing: -0.5,
   },
-  inputGroup: {
-    marginBottom: 30,
-    alignItems: 'center',
+  formContainer: {
+    gap: 16,
+    marginTop: 10,
   },
-  label: {
+  inputCard: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#2C2C2E',
+  },
+  iconNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  iconPickerBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: '#2C2C2E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconInputBox: {
+    fontSize: 32,
+    textAlign: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  nameInputContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  nameInputLabel: {
     color: '#888',
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  nameInput: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    padding: 0,
+  },
+  limitHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
+  },
+  limitInputLabel: {
+    color: '#888',
+    fontSize: 12,
+    fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  input: {
+  limitInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  currencySymbol: {
+    color: '#888',
     fontSize: 32,
-    color: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-    width: '100%',
-    textAlign: 'center',
-    paddingVertical: 10,
     fontWeight: '600',
+    marginRight: 8,
   },
-  iconInput: {
-    fontSize: 48,
-    width: '30%',
+  limitInput: {
+    color: '#fff',
+    fontSize: 40,
+    fontWeight: '700',
+    flex: 1,
+    padding: 0,
   },
-  buttonRow: {
-    marginTop: 20,
+  buttonWrapper: {
+    marginTop: 32,
   },
   button: {
     backgroundColor: '#fff',

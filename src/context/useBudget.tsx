@@ -30,7 +30,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
         activeBatchTransactions,
       }}
     >
-      {!state.loading && children}
+      {children}
     </BudgetContext.Provider>
   );
 };

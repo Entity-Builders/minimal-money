@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useBudget } from '../context/useBudget';
-import { supabase } from '@eb-packages/logic';
+import { supabase, generateBudgetIcon } from '@eb-packages/logic';
 
 export const useOnboarding = () => {
   const { addBatch } = useBudget();
@@ -8,7 +8,6 @@ export const useOnboarding = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState('Supermercado');
-  const [icon, setIcon] = useState('🛒');
   const [monthlyLimit, setMonthlyLimit] = useState('');
 
   const finishOnboarding = async () => {
@@ -24,7 +23,8 @@ export const useOnboarding = () => {
       console.error('[useOnboarding] Error fetching user:', e);
     }
 
-    const result = await addBatch(name, icon, limit);
+    const generatedIcon = await generateBudgetIcon(name);
+    const result = await addBatch(name, generatedIcon, limit);
     setLoading(false);
     
     if (result && result.success === false) {
@@ -38,8 +38,6 @@ export const useOnboarding = () => {
   return {
     name,
     setName,
-    icon,
-    setIcon,
     monthlyLimit,
     setMonthlyLimit,
     loading,

@@ -1,0 +1,21 @@
+# 01-happy-path.yaml
+# TEST: New user — resetea el usuario, hace auth y crea el primer budget
+# Prerequisitos: Metro corriendo, simulador iOS con dev build, Supabase local
+
+appId: com.juanobrach.minimalmoney.development
+---
+
+# Reset garantiza que empezamos con usuario fresco sin sesión ni budgets
+- runFlow:
+    file: flows/reset-user.yaml
+
+- runFlow:
+    file: flows/launch.yaml
+
+- runFlow:
+    file: flows/auth.yaml
+
+- runFlow:
+    file: flows/create-budget.yaml
+
+- takeScreenshot: 01-home-screen

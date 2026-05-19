@@ -32,6 +32,12 @@ export default function AuthScreen() {
     });
 
     try {
+      // BACKDOOR PARA MAESTRO E2E
+      if (__DEV__ && email === 'maestro@minimalmoney.com') {
+        setOtpSent(true);
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
       });
@@ -74,6 +80,25 @@ export default function AuthScreen() {
     });
 
     try {
+      // BACKDOOR PARA MAESTRO E2E
+      if (__DEV__ && email === 'maestro@minimalmoney.com' && token === '123456') {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password: 'maestro-e2e-password-123',
+        });
+        
+        if (error && error.message.includes('Invalid login credentials')) {
+          const { error: signUpError } = await supabase.auth.signUp({
+            email,
+            password: 'maestro-e2e-password-123',
+          });
+          if (signUpError) throw signUpError;
+        } else if (error) {
+          throw error;
+        }
+        return;
+      }
+
       const { error } = await supabase.auth.verifyOtp({
         email,
         token,
@@ -106,16 +131,19 @@ export default function AuthScreen() {
         <View style={styles.inputContainer}>
           {!otpSent ? (
             <TextInput
+              testID="auth-email-input"
               style={styles.input}
               placeholder="Email"
               placeholderTextColor="#666"
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
+              autoCorrect={false}
               keyboardType="email-address"
             />
           ) : (
             <TextInput
+              testID="auth-otp-input"
               style={styles.input}
               placeholder="Código de 6 dígitos"
               placeholderTextColor="#666"

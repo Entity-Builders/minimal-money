@@ -14,6 +14,8 @@
     "update:preview": "node scripts/eas-update.js preview",
     "update:prod": "node scripts/eas-update.js production",
     "test": "jest",
+    "test:e2e": "$HOME/.maestro/bin/maestro test .maestro/",
+    "test:e2e:record": "$HOME/.maestro/bin/maestro record .maestro/01-happy-path.yaml",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",

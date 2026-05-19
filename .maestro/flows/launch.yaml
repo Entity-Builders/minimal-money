@@ -1,0 +1,36 @@
+# flows/launch.yaml
+# Reutilizable: Lanza la app y resuelve los workarounds de Expo Dev Client
+# USO: - runFlow: file: flows/launch.yaml
+
+appId: com.juanobrach.minimalmoney.development
+---
+
+- launchApp:
+    clearState: true
+
+# Previene kAXErrorInvalidUIElement en iOS cold boot
+- swipe:
+    direction: DOWN
+    duration: 100
+
+# Expo Launcher (lista de servidores)
+- runFlow:
+    when:
+      visible: "http://.*"
+    commands:
+      - tapOn: "http://.*"
+
+# Expo Dev Drawer abierto sobre la app
+- runFlow:
+    when:
+      visible: 'Toggle performance monitor'
+    commands:
+      - swipe:
+          direction: DOWN
+      - tapOn:
+          point: 50%, 10%
+
+# Esperar a que el bundle JS cargue
+- extendedWaitUntil:
+    visible: 'Minimal Money'
+    timeout: 20000

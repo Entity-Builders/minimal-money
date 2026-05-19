@@ -1,0 +1,27 @@
+# flows/reset-user.yaml
+# Reutilizable: Resetea el usuario E2E en Supabase local antes del test
+# USO: - runFlow: file: flows/reset-user.yaml
+# REQUIERE: supabase functions serve reset-e2e-user --no-verify-jwt
+
+appId: com.juanobrach.minimalmoney.development
+---
+
+- evalScript: |
+    try {
+      var response = http.post(
+        'http://localhost:54321/functions/v1/reset-e2e-user',
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRFA0NiK7W9fDQlQqZHh2VkUFvGvPIgoGTh8S7c8vDQ'
+          },
+          body: '{}'
+        }
+      );
+      output.resetOk = response.statusCode === 200 ? 'true' : 'false';
+      output.resetMsg = 'status: ' + response.statusCode;
+    } catch (e) {
+      // No bloquear el test si la función no está servida
+      output.resetOk = 'skipped';
+      output.resetMsg = 'reset-e2e-user not available: ' + e;
+    }

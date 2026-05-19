@@ -40,13 +40,19 @@ export const budgetReducer = (
         loading: true, // Set loading true while we fetch data for this user
       };
       
-    case 'SET_DATA':
+    case 'SET_DATA': {
+      const newBatches = action.payload.batches;
+      let newActiveBatchId = state.activeBatchId;
+      if (!newActiveBatchId || !newBatches.find(b => b.id === newActiveBatchId)) {
+         newActiveBatchId = newBatches.length > 0 ? newBatches[0].id : null;
+      }
       return {
         ...state,
         ...action.payload,
-        activeBatchId: action.payload.batches.length > 0 ? action.payload.batches[0].id : null,
+        activeBatchId: newActiveBatchId,
         loading: false,
       };
+    }
       
     case 'ADD_BATCH':
       return {

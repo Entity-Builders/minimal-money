@@ -7,6 +7,8 @@ import {
   KeyboardAvoidingView, 
   Platform, 
   ScrollView,
+  InputAccessoryView,
+  Keyboard
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +20,7 @@ import { useBudget } from '../context/useBudget';
 import { safeHaptics as Haptics } from '../utils/haptics';
 
 export const OnboardingScreen: React.FC = () => {
-  const { name, setName, icon, setIcon, monthlyLimit, setMonthlyLimit, loading, error, finishOnboarding } = useOnboarding();
+  const { name, setName, monthlyLimit, setMonthlyLimit, loading, error, finishOnboarding } = useOnboarding();
   const { refreshData } = useBudget();
   const [mode, setMode] = useState<'select' | 'create'>('select');
   const joinSheetRef = useRef<BottomSheetModal>(null);
@@ -98,48 +100,47 @@ export const OnboardingScreen: React.FC = () => {
       <Text style={styles.headerText}>New Budget</Text>
 
       {error && (
-        <Text style={{ color: '#FF453A', textAlign: 'center', marginBottom: 20, fontSize: 14 }}>
+        <Text style={{ color: '#FF453A', marginBottom: 20, fontSize: 14 }}>
           {error}
         </Text>
       )}
 
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Icon</Text>
-        <TextInput
-          style={[styles.input, styles.iconInput]}
-          value={icon}
-          onChangeText={setIcon}
-          placeholder="🛒"
-          placeholderTextColor="#444"
-          maxLength={2}
-        />
+      <View style={styles.formContainer}>
+        {/* Name Card */}
+        <View style={styles.inputCard}>
+          <Text style={styles.nameInputLabel}>Budget Name</Text>
+          <TextInput
+            style={styles.nameInput}
+            value={name}
+            onChangeText={setName}
+            placeholder="Supermercado"
+            placeholderTextColor="#444"
+            autoCapitalize="words"
+          />
+        </View>
+
+        {/* Monthly Limit Card */}
+        <View style={styles.inputCard}>
+          <View style={styles.limitHeaderRow}>
+            <Text style={styles.limitInputLabel}>Monthly Limit</Text>
+          </View>
+          <View style={styles.limitInputWrapper}>
+            <Text style={styles.currencySymbol}>$</Text>
+            <TextInput
+              style={styles.limitInput}
+              value={monthlyLimit}
+              onChangeText={setMonthlyLimit}
+              keyboardType="numeric"
+              placeholder="0"
+              placeholderTextColor="#444"
+              returnKeyType="done"
+              inputAccessoryViewID="doneID"
+            />
+          </View>
+        </View>
       </View>
 
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Name</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Supermercado"
-          placeholderTextColor="#444"
-          autoCapitalize="words"
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Monthly Limit</Text>
-        <TextInput
-          style={styles.input}
-          value={monthlyLimit}
-          onChangeText={setMonthlyLimit}
-          keyboardType="numeric"
-          placeholder="0"
-          placeholderTextColor="#444"
-        />
-      </View>
-
-      <View style={styles.buttonRow}>
+      <View style={styles.buttonWrapper}>
         <TouchableOpacity 
           style={[styles.button, (!isFormValid || loading) && styles.buttonDisabled]}
           onPress={async () => {
@@ -153,6 +154,19 @@ export const OnboardingScreen: React.FC = () => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {Platform.OS === 'ios' && (
+        <InputAccessoryView nativeID="doneID">
+          <View style={{ backgroundColor: '#1C1C1E', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#2C2C2E' }}>
+            <TouchableOpacity onPress={() => Keyboard.dismiss()}>
+              <Text style={{ color: '#888', fontSize: 18, fontWeight: '400' }}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => Keyboard.dismiss()}>
+              <Text style={{ color: '#0A84FF', fontSize: 18, fontWeight: '600' }}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </InputAccessoryView>
+      )}
     </ScrollView>
   );
 

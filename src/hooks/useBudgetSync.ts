@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import * as Sentry from '@sentry/react-native';
-import { supabase } from '@eb-packages/logic';
+import { supabase, supabaseSchema } from '@eb-packages/logic';
 import { BudgetService } from '../services/budgetService';
 import { BudgetAction } from '../context/budgetReducer';
 
@@ -45,7 +45,7 @@ export const useBudgetSync = (dispatch: React.Dispatch<BudgetAction>) => {
         .channel('minimal_money_sync')
         .on(
           'postgres_changes',
-          { event: '*', schema: 'minimal_money', table: 'transactions' },
+          { event: '*', schema: supabaseSchema, table: 'transactions' },
           () => {
             console.log('Realtime update: transactions changed');
             loadData(userId);
@@ -53,7 +53,7 @@ export const useBudgetSync = (dispatch: React.Dispatch<BudgetAction>) => {
         )
         .on(
           'postgres_changes',
-          { event: '*', schema: 'minimal_money', table: 'batches' },
+          { event: '*', schema: supabaseSchema, table: 'batches' },
           () => {
             console.log('Realtime update: batches changed');
             loadData(userId);
