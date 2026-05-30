@@ -12,8 +12,6 @@ appId: com.juanobrach.minimalmoney.development
       - tapOn:
           id: "auth-email-input"
       - inputText: 'maestro@minimalmoney.com'
-      - hideKeyboard
-      - waitForAnimationToEnd
       - tapOn: 'Enviar código'
       - extendedWaitUntil:
           visible: 'Ingresa tu código'

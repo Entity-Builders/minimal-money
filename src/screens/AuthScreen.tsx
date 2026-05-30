@@ -82,21 +82,25 @@ export default function AuthScreen() {
     try {
       // BACKDOOR PARA MAESTRO E2E
       if (__DEV__ && email === 'maestro@minimalmoney.com' && token === '123456') {
-        const { error } = await supabase.auth.signInWithPassword({
+        // Intento 1: login con password fijo del usuario E2E
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password: 'maestro-e2e-password-123',
         });
-        
-        if (error && error.message.includes('Invalid login credentials')) {
-          const { error: signUpError } = await supabase.auth.signUp({
-            email,
-            password: 'maestro-e2e-password-123',
-          });
-          if (signUpError) throw signUpError;
-        } else if (error) {
-          throw error;
-        }
-        return;
+
+        if (!signInError) return; // ✅ Login exitoso
+
+        // Intento 2: el usuario no existe o tiene otro password → signUp
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password: 'maestro-e2e-password-123',
+        });
+
+        if (!signUpError) return; // ✅ Usuario creado y logueado
+
+        // Intento 3: "already registered" → el usuario existe pero con otro estado
+        // Lanzar error claro para debuggear
+        throw new Error(`E2E backdoor failed: signIn(${signInError.message}) signUp(${signUpError.message})`);
       }
 
       const { error } = await supabase.auth.verifyOtp({
