@@ -3,8 +3,14 @@ node_modules/
 
 # ─── Other apps in the monorepo (the biggest culprits) ─────────
 ../../apps/PostalPeek/
+../../apps/baraja/
+../../apps/flowtranslate/
+../../apps/guita-control/
+../../apps/portfolio/
 ../../apps/potlink-mobile/
 ../../apps/promptly/
+../../apps/promptly-site/
+../../apps/shrinkle/
 ../../apps/tablia/
 ../../apps/tellee/
 ../../apps/zigzag/
@@ -34,7 +40,8 @@ dist/
 **/*.avi
 
 # ─── Docs, scripts, ideas ───────────────────────────────────────
-../../.agent/
+../../.agents/
+../../.codex/
 ../../docs/
 ../../test-*.js
 

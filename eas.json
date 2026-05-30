@@ -5,7 +5,13 @@
   },
   "build": {
     "base": {
-      "corepack": true
+      "corepack": true,
+      "ios": {
+        "image": "sdk-54"
+      },
+      "android": {
+        "image": "sdk-54"
+      }
     },
     "development": {
       "extends": "base",
