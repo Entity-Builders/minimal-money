@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react-native';
-import { supabase } from '@eb-packages/logic';
+import { supabase } from '@entity-builders/logic';
 import { Batch, Currency, Transaction, BatchMember } from '../types';
 
 // Assuming we will use 'batches' and 'transactions' as tables in the minimal_money schema

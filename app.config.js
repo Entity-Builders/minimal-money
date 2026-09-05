@@ -1,4 +1,4 @@
-const { createAppConfig } = require('@eb-packages/expo-config');
+const { createAppConfig } = require('@entity-builders/expo-config');
 
 const isDev = process.env.EXPO_PUBLIC_APP_ENV === 'development';
 

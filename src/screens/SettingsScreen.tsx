@@ -19,7 +19,7 @@ import { SettingsHeader } from '../components/settings/SettingsHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { JoinBudgetSheet } from '../components/sharing/JoinBudgetSheet';
 import { CreateBudgetSheet } from '../components/sharing/CreateBudgetSheet';
-import { generateInviteCode } from '@eb-packages/logic';
+import { generateInviteCode } from '@entity-builders/logic';
 import { SharedAvatars } from '../components/sharing/SharedAvatars';
 import * as Clipboard from 'expo-clipboard';
 

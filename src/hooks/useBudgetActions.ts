@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import * as Sentry from '@sentry/react-native';
-import { supabase } from '@eb-packages/logic';
+import { supabase } from '@entity-builders/logic';
 import { BudgetService } from '../services/budgetService';
 import { BudgetAction } from '../context/budgetReducer';
 import { Batch, Currency } from '../types';

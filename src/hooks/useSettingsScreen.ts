@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useBudget } from '../context/useBudget';
-import { supabase, generateBudgetIcon } from '@eb-packages/logic';
+import { supabase, generateBudgetIcon } from '@entity-builders/logic';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';

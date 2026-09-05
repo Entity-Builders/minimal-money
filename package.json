@@ -25,8 +25,8 @@
     "seed": "node scripts/seed_expenses.js"
   },
   "dependencies": {
-    "@eb-packages/logic": "*",
-    "@eb-packages/ui": "*",
+    "@entity-builders/logic": "*",
+    "@entity-builders/ui": "*",
     "@expo/metro-runtime": "~6.1.2",
     "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "2.2.0",

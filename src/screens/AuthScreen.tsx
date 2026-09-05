@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { supabase, supabaseUrl } from '@eb-packages/logic';
+import { supabase, supabaseUrl } from '@entity-builders/logic';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AuthScreen() {

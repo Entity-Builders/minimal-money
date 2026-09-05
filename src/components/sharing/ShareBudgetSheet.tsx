@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   generateInviteCode,
   InviteCode,
-} from '@eb-packages/logic';
+} from '@entity-builders/logic';
 
 interface ShareBudgetSheetProps {
   batchId: string;

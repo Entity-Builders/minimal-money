@@ -13,7 +13,7 @@ import { TextInput } from 'react-native';
 
 const InputComponent = Platform.OS === 'web' ? TextInput : BottomSheetTextInput;
 import { Ionicons } from '@expo/vector-icons';
-import { joinBatchWithCode, JoinResult } from '@eb-packages/logic';
+import { joinBatchWithCode, JoinResult } from '@entity-builders/logic';
 import { safeHaptics as Haptics } from '../../utils/haptics';
 
 interface JoinBudgetSheetProps {

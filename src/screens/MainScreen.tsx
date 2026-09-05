@@ -47,7 +47,7 @@ import { BudgetFocusDisplay } from '../components/main/BudgetFocusDisplay';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, Batch } from '../types';
-import { JoinResult } from '@eb-packages/logic';
+import { JoinResult } from '@entity-builders/logic';
 import { getColorForBatch } from '../utils/colors';
 
 const { width } = Dimensions.get('window');

@@ -29,13 +29,13 @@ visible: true
 
 - Expense tracking and categorization
 - Budget management
-- Financial calculations via `@eb-packages/logic`
+- Financial calculations via `@entity-builders/logic`
 
 ## Tech Stack
 
 - **Framework**: Expo (React Native)
 - **Backend**: Supabase (Auth, Postgres)
-- **Logic**: `@eb-packages/logic` (budgetService, calculations)
+- **Logic**: `@entity-builders/logic` (budgetService, calculations)
 
 ## Running
 
