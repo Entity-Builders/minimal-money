@@ -25,8 +25,8 @@
     "seed": "node scripts/seed_expenses.js"
   },
   "dependencies": {
-    "@entity-builders/logic": "*",
-    "@entity-builders/ui": "*",
+    "@entity-builders/logic": "^1.0.0",
+    "@entity-builders/ui": "^1.0.0",
     "@expo/metro-runtime": "~6.1.2",
     "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -81,5 +81,10 @@
     "prettier": "^3.7.4",
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
+  },
+  "packageManager": "yarn@4.13.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Entity-Builders/minimal-money.git"
   }
 }
